@@ -16,6 +16,6 @@ import java.util.*
 //}
 
 data class IOUToken(
-        override val tokenIdentifier: String,
-        override val fractionDigits: Int = 0
-) : TokenType(tokenIdentifier, fractionDigits)
+         override val tokenIdentifier: String,
+         override val fractionDigits: Int = 0
+): TokenType(tokenIdentifier, fractionDigits)

@@ -23,10 +23,10 @@ import java.util.*
  *   except at issuance/termination.
  */
 @BelongsToContract(IOUContract::class)
-data class IOUState(val amount: Amount<Currency>,
+data class IOUTokenState(val amount: Amount<IOUToken>,
                     val lender: Party,
                     val borrower: Party,
-                    val paid: Amount<Currency> = Amount(0, amount.token),
+                    val paid: Amount<IOUToken> = Amount(0, amount.token),
                     override val linearId: UniqueIdentifier = UniqueIdentifier()): LinearState, QueryableState {
     /**
      *  This property holds a list of the nodes which can "use" this state in a valid transaction. In this case, the
@@ -39,7 +39,7 @@ data class IOUState(val amount: Amount<Currency>,
      * - [pay] adds an amount to the paid property. It does no validation.
      * - [withNewLender] creates a copy of the current state with a newly specified lender. For use when transferring.
      */
-    fun pay(amountToPay: Amount<Currency>) = copy(paid = paid.plus(amountToPay))
+    fun pay(amountToPay: Amount<IOUToken>) = copy(paid = paid.plus(amountToPay))
     fun withNewLender(newLender: Party) = copy(lender = newLender)
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState {
