@@ -23,8 +23,6 @@ import net.corda.core.transactions.TransactionBuilder
 class IOUIssueFlow(val state: IOUState): FlowLogic<SignedTransaction>() {
     @Suspendable
     override fun call(): SignedTransaction {
-        // Step 1. Get a reference to the notary service on our network and our key pair.
-        // Note: ongoing work to support multiple notary identities is still in progress.
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
 
         // Step 2. Create a new issue command.
