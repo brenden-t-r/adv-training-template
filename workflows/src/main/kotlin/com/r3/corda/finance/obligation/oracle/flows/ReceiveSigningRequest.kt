@@ -18,7 +18,7 @@ class ReceiveSigningRequest(val otherSession: FlowSession) : FlowLogic<Unit>() {
     override fun call() {
         val request = otherSession.receive<FilteredTransaction>().unwrap { it }
         // As this is just a stub implementation, we can sign anything which is sent to us.
-        // In a full implementation, the Oracle would check that the exchange rate is correct to some tolerance.
+        // In a full implementation, the ExchangeRateOracleService would check that the exchange rate is correct to some tolerance.
         val signatureMetadata = SignatureMetadata(serviceHub.myInfo.platformVersion, Crypto.findSignatureScheme(ourIdentity.owningKey).schemeNumberID)
         val signableData = SignableData(request.id, signatureMetadata)
         val signature = serviceHub.keyManagementService.sign(signableData, ourIdentity.owningKey)

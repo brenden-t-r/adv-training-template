@@ -15,6 +15,7 @@ import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
 import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.template.flows.BankApiSettlement
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
@@ -45,7 +46,7 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
             val result = oracleService.hasPaymentSettled(xrpPayment, obligation)
             when (result) {
                 VerifyResult.SUCCESS, VerifyResult.TIMEOUT, VerifyResult.REJECTED -> return result
-                // Sleep for five seconds before we try again. The Oracle might receive the request to verify payment
+                // Sleep for five seconds before we try again. The ExchangeRateOracleService might receive the request to verify payment
                 // before the payment succeed. Also it takes a bit of time for all the nodes to receive the new ledger
                 // version. Note: sleep is a suspendable operation.
                 VerifyResult.PENDING -> sleep(Duration.ofSeconds(RETRY_TIME_TO_WAIT_FOR_SETTLEMENT))
@@ -105,7 +106,7 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
         }
 
         // 3. As payments are appended to the end of the payments list, we assume we are only checking the last
-        // payment. The obligation is sent to the settlement Oracle for EACH payment, so everyone does get checked.
+        // payment. The obligation is sent to the settlement ExchangeRateOracleService for EACH payment, so everyone does get checked.
         val payments = obligation.payments
         val lastPayment = if (payments.isEmpty()) {
             otherSession.send(SettlementOracleResult.Failure(null, "No payments have been made for this obligation."))
@@ -116,6 +117,7 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
         val verifyResult = when (settlementMethod) {
             is XrpSettlement -> verifyXrpSettlement(obligation, lastPayment as XrpPayment<TokenType>)
             is SwiftSettlement -> verifySwiftSettlement(lastPayment as SwiftPayment)
+            is BankApiSettlement -> throw IllegalStateException("Payment rail not implemented yet.")
             else -> throw IllegalStateException("Invalid settlement method $settlementMethod.")
         }
 

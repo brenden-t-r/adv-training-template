@@ -52,7 +52,7 @@ object NovateObligation {
         fun handleUpdateFaceAmountToken(obligation: Obligation<TokenType>): Pair<Obligation<TokenType>, ObligationCommands.Novate> {
             // We know that this is a token change.
             novationCommand as ObligationCommands.Novate.UpdateFaceAmountToken<*, *>
-            // If no fx rate is supplied then get one from the Oracle.
+            // If no fx rate is supplied then get one from the ExchangeRateOracleService.
             val fxRate = if (novationCommand.fxRate == null) {
                 val request = FxRateRequest(novationCommand.oldToken, novationCommand.newToken, obligation.createdAt)
                 val response: FxRateResponse = subFlow(GetFxRate(request, novationCommand.oracle))

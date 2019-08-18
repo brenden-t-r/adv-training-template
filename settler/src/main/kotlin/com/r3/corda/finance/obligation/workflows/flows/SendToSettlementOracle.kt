@@ -38,14 +38,14 @@ class SendToSettlementOracle(
         val obligationStateAndRef = getLinearStateById<Obligation<*>>(linearId, serviceHub)
                 ?: throw IllegalArgumentException("LinearId not recognised.")
 
-        // Get the Oracle from the settlement instructions.
+        // Get the ExchangeRateOracleService from the settlement instructions.
         val obligationState = obligationStateAndRef.state.data
         val settlementMethod = obligationState.settlementMethod as OffLedgerPayment<*>
 
         val settlementOracle = settlementMethod.settlementOracle
-                ?: throw IllegalArgumentException("Settlement Oracle must not be null")
+                ?: throw IllegalArgumentException("Settlement ExchangeRateOracleService must not be null")
 
-        // Send the Oracle the ObligationContract state.
+        // Send the ExchangeRateOracleService the ObligationContract state.
         progressTracker.currentStep = SENDING
         val session = initiateFlow(settlementOracle)
         subFlow(SendStateAndRefFlow(session, listOf(obligationStateAndRef)))

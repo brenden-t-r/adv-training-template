@@ -47,7 +47,7 @@ class XrpOracleService(val services: AppServiceHub) : SingletonSerializeAsToken(
             try {
                 client.transaction(xrpPayment.paymentReference)
             } catch (e: TransactionNotFoundException) {
-                // The transaction is not recognised by the Oracle.
+                // The transaction is not recognised by the ExchangeRateOracleService.
                 return false
             } catch (e: MissingKotlinParameterException) {
                 // The transaction has no associated metadata yet. In which case, Jackson will not be able to deserialize

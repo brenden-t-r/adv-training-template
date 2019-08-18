@@ -16,7 +16,7 @@ class ReceiveFxRateRequest(val otherSession: FlowSession) : FlowLogic<Unit>() {
     override fun call() {
         val request = otherSession.receive<FxRateRequest>().unwrap { it }
         val fxRateService = serviceHub.cordaService(FxRateService::class.java)
-        // Don't use the real Fx Oracle for testing.
+        // Don't use the real Fx ExchangeRateOracleService for testing.
         //val response = fxRateService.getRate(request)
         val response = FxRate(request.baseCurrency, request.counterCurrency, request.time, 2L)
         otherSession.send(response)

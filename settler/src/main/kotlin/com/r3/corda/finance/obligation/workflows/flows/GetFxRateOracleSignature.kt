@@ -10,7 +10,7 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.unwrap
 import java.util.function.Predicate
 
-/** Sends only a filtered transaction to the Oracle. */
+/** Sends only a filtered transaction to the ExchangeRateOracleService. */
 class GetFxRateOracleSignature(private val ptx: SignedTransaction, val oracle: Party) : AbstractGetFxOracleSignature() {
     @Suspendable
     override fun call(): TransactionSignature {
