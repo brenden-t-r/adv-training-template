@@ -18,35 +18,35 @@ import kotlin.test.assertEquals
 
 
 class TokenIOUIssueFlowTests {
-    private val network = MockNetwork(MockNetworkParameters(cordappsForAllNodes = listOf(
-            TestCordapp.findCordapp("com.template.contracts"),
-            TestCordapp.findCordapp("com.template.flows"),
-            TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
-            TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts")
-    )))
-    private val a = network.createNode()
-    private val b = network.createNode()
-    private val c = network.createNode()
-
-    init {
-        listOf(a, b, c).forEach {
-            //it.registerInitiatedFlow(TokenIOUIssueFlowResponder::class.java)
-        }
-    }
-
-    @Before
-    fun setup() = network.runNetwork()
-
-    @After
-    fun tearDown() = network.stopNodes()
-
-    @Test
-    fun test1() {
-        val future = b.startFlow(TokenIOUIssueFlow(25))
-        network.runNetwork()
-        val stx = future.getOrThrow()
-
-        assertEquals(stx.tx.outputStates.size, 1)
-        assertEquals((stx.tx.outputStates.get(0) as FungibleToken).amount.quantity, 25)
-    }
+//    private val network = MockNetwork(MockNetworkParameters(cordappsForAllNodes = listOf(
+//            TestCordapp.findCordapp("com.template.contracts"),
+//            TestCordapp.findCordapp("com.template.flows"),
+//            TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
+//            TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts")
+//    )))
+//    private val a = network.createNode()
+//    private val b = network.createNode()
+//    private val c = network.createNode()
+//
+//    init {
+//        listOf(a, b, c).forEach {
+//            //it.registerInitiatedFlow(TokenIOUIssueFlowResponder::class.java)
+//        }
+//    }
+//
+//    @Before
+//    fun setup() = network.runNetwork()
+//
+//    @After
+//    fun tearDown() = network.stopNodes()
+//
+//    @Test
+//    fun test1() {
+//        val future = b.startFlow(TokenIOUIssueFlow(25))
+//        network.runNetwork()
+//        val stx = future.getOrThrow()
+//
+//        assertEquals(stx.tx.outputStates.size, 1)
+//        assertEquals((stx.tx.outputStates.get(0) as FungibleToken).amount.quantity, 25)
+//    }
 }

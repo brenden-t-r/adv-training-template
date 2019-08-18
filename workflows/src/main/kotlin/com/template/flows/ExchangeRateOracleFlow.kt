@@ -26,12 +26,11 @@ import java.util.function.Predicate
 
 @InitiatingFlow
 @StartableByRPC
-class ExchangeRateOracleFlow(val iouTokenState: StateAndRef<IOUTokenState>) : FlowLogic<SignedTransaction>() {
+class ExchangeRateOracleFlow(val ptx: SignedTransaction) : FlowLogic<SignedTransaction>() {
     override val progressTracker = ProgressTracker()
 
-    fun createFilteredTransaction(oracle: Party, builder: TransactionBuilder): FilteredTransaction {
-        val ptx = serviceHub.signInitialTransaction(builder)
-        return ptx.buildFilteredTransaction(Predicate {
+    fun createFilteredTransaction(oracle: Party, stx: SignedTransaction): FilteredTransaction {
+        return stx.buildFilteredTransaction(Predicate {
             when (it) {
                 is Command<*> -> oracle.owningKey in it.signers //&& it.value is FxRateContract.Create
                 else -> false
@@ -41,38 +40,19 @@ class ExchangeRateOracleFlow(val iouTokenState: StateAndRef<IOUTokenState>) : Fl
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val notary = serviceHub.networkMapCache.notaryIdentities.first()
-
         // Get oracle identity
         val oracleName = CordaX500Name("ExchangeRateOracleService", "New York","US")
         val oracle = serviceHub.networkMapCache.getNodeByLegalName(oracleName)?.legalIdentities?.first()
                 ?: throw IllegalArgumentException("Requested oracle $oracleName not found on network.")
 
-        // Create builder
-        val builder = TransactionBuilder(notary)
+        // Create MerkleTree "Tear Off" for confidentiality
+        val filteredTx = createFilteredTransaction(oracle, ptx)
 
-        // Query oracle for value
-        val resultFromOracle = subFlow(QueryExchangeRate(oracle, "USD"))
-
-        // Update builder with value
-        builder.addCommand(
-                ExchangeRateContract.Exchange("USD", resultFromOracle),
-                listOf(oracle.owningKey, ourIdentity.owningKey)
-        )
-        builder.addInputState(iouTokenState)
-        builder.addOutputState(IOUState(
-                Amount(iouTokenState.state.data.amount.quantity, Currency.getInstance("USD")),
-                iouTokenState.state.data.lender,
-                iouTokenState.state.data.borrower), IOUContract.IOU_CONTRACT_ID)
-        val ptx = serviceHub.signInitialTransaction(builder)
-
-        val filteredTx = createFilteredTransaction(oracle, builder)
-
+        // Request Oracle signature
         val oracleSignature = subFlow(SignExchangeRate(oracle, filteredTx))
         val stx = ptx.withAdditionalSignature(oracleSignature)
 
-        return stx;
-//        return subFlow(FinalityFlow(ptx, listOf()))
+        return stx
     }
 }
 

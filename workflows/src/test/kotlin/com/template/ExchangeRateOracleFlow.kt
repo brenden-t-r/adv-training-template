@@ -2,23 +2,27 @@ package com.template
 
 import com.template.contracts.ExchangeRateContract
 import com.template.contracts.IOUContract
-import com.template.flows.ExchangeRateOracleService
-import com.template.flows.Responder
+import com.template.flows.*
+import com.template.flows.ExchangeRateOracleFlow
+import com.template.states.IOUState
 import com.template.states.IOUToken
 import com.template.states.IOUTokenState
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.Command
+import net.corda.core.identity.CordaX500Name
 import net.corda.core.node.ServiceHub
 import net.corda.core.transactions.FilteredTransaction
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
+import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.MockNetworkParameters
 import net.corda.testing.node.TestCordapp
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.util.*
 import java.util.function.Predicate
 import kotlin.test.assertEquals
 
@@ -29,11 +33,12 @@ class ExchangeRateOracleFlow {
     )))
     private val a = network.createNode()
     private val b = network.createNode()
-    private val c = network.createNode()
+    private val c = network.createNode(CordaX500Name("ExchangeRateOracleService", "New York", "US"))
 
     init {
         listOf(a, b, c).forEach {
-            it.registerInitiatedFlow(Responder::class.java)
+            it.registerInitiatedFlow(QueryHandler::class.java)
+            it.registerInitiatedFlow(SignHandler::class.java)
         }
     }
 
@@ -109,50 +114,36 @@ class ExchangeRateOracleFlow {
      *  -
      */
     @Test
-    fun oracleServiceQueryHandler() {
-        val oracle = ExchangeRateOracleService(services = c.services)
-        val notary = a.services.networkMapCache.notaryIdentities.get(0)
-        val builder = TransactionBuilder(notary = notary)
+    fun oracleFlow() {
+        val notary = a.services.networkMapCache.notaryIdentities.first()
+        val builder = TransactionBuilder(notary)
 
-        // Create IOUTokenState
-        val iou = IOUTokenState(
+        val future = a.startFlow(QueryExchangeRate(c.info.legalIdentities.get(0), "USD"))
+        network.runNetwork()
+        val resultFromOracle = future.getOrThrow()
+
+        // Update builder with value
+        builder.addCommand(
+                ExchangeRateContract.Exchange("USD", resultFromOracle),
+                listOf(c.info.legalIdentities.get(0).owningKey, a.info.legalIdentities.get(0).owningKey)
+        )
+        val iouTokenState = IOUTokenState(
                 Amount(5, IOUToken("CUSTOM_TOKEN", 2)),
                 a.info.legalIdentities.get(0),
                 b.info.legalIdentities.get(0))
+        builder.addOutputState(IOUState(
+                Amount(iouTokenState.amount.quantity, Currency.getInstance("USD")),
+                iouTokenState.lender,
+                iouTokenState.borrower), IOUContract.IOU_CONTRACT_ID)
+        val ptx = a.services.signInitialTransaction(builder)
 
+        val oracleFuture = a.startFlow(ExchangeRateOracleFlow(ptx))
+        network.runNetwork()
+        val signedTx = oracleFuture.getOrThrow()
 
-
-        // Query for IOUTokenState StateRef
-
-        // Start ExchangeRate flow
-
-        // Check that output state is correct
-        // Check that input state is ocrrect
         // Check that oracle signature is present
+        signedTx.verifyRequiredSignatures()
 
     }
-
-
-
-
-
-
-
-/*    *//**
-     * Task 3
-     * TODO: Complete the [call] function of the [QueryHandler] flow.
-     * Hint:
-     *  - The [QueryHandler] flow is the Responding flow to the [QueryExchangeRate] flow. We will use the
-     *  Oracle service we created in the previous exercises.
-     *  - First, we need to receive our query parameter form the FlowSession. This can be done using the [receive]
-     *  method from our [FlowSession]. Receive<>() is parameterized by the expected data type - in this case a
-     *  [String] for our currency code.
-     *  -
-     *//*
-    @Test
-    fun oracleServiceQueryHandler() {
-
-    }*/
-
 
 }
