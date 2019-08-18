@@ -65,13 +65,13 @@ class FxOracleFlow : FlowLogic<SignedTransaction>() {
     }
 }
 
-@InitiatedBy(FxOracleFlow::class)
-class FxOracleFlowResponder(val counterpartySession: FlowSession) : FlowLogic<Unit>() {
-    @Suspendable
-    override fun call() {
-        // Responder flow logic goes here.
-    }
-}
+//@InitiatedBy(FxOracleFlow::class)
+//class FxOracleFlowResponder(val counterpartySession: FlowSession) : FlowLogic<Unit>() {
+//    @Suspendable
+//    override fun call() {
+//        // Responder flow logic goes here.
+//    }
+//}
 
 @InitiatingFlow
 class QueryExchangeRate(val oracle: Party, val currencyCode: String) : FlowLogic<Double>() {
