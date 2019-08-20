@@ -38,19 +38,21 @@ class StateTests {
 
     /**
      * Task 1.
-     * TODO: Update our IOUState to use [IOUToken] rather than [Currency].
+     * TODO: ? Update our IOUState to use [IOUToken] rather than [Currency].
      * Hint: [Amount] can be used to specify an amount of IOUToken.
      */
-    @Test
-    fun hasIOUAmountFieldOfCorrectType() {
-        // Does the amount field exist?
-        val field = IOUState::class.java.getDeclaredField("amount")
+//    @Test
+//    fun hasIOUAmountFieldOfCorrectType() {
+//        // Does the amount field exist?
+//        val field = IOUState::class.java.getDeclaredField("amount")
+//
+//        // Is the amount field of the correct type?
+//        assertEquals(field.type, Amount::class.java)
+//
+//        // Does the amount field have the correct paramerized type?
+//        val signature = (field.genericType as ParameterizedTypeImpl).actualTypeArguments[0]
+//        assertEquals(signature, IOUToken::class.java)
+//    }
 
-        // Is the amount field of the correct type?
-        assertEquals(field.type, Amount::class.java)
-
-        // Does the amount field have the correct paramerized type?
-        val signature = (field.genericType as ParameterizedTypeImpl).actualTypeArguments[0]
-        assertEquals(signature, IOUToken::class.java)
-    }
+    // TODO: queryable state tests
 }

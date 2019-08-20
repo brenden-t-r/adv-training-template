@@ -1,5 +1,8 @@
 package com.template.states
 
+import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.template.contracts.IOUContract
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.BelongsToContract
@@ -10,6 +13,7 @@ import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
 import java.util.*
+
 
 /**
  * The IOU State object, with the following properties:
@@ -23,11 +27,11 @@ import java.util.*
  *   except at issuance/termination.
  */
 @BelongsToContract(IOUContract::class)
-data class IOUState(val amount: Amount<Currency>,
+data class IOUState(val amount: Amount<TokenType>,
                     val lender: Party,
                     val borrower: Party,
-                    val paid: Amount<Currency> = Amount(0, amount.token),
-                    override val linearId: UniqueIdentifier = UniqueIdentifier()): LinearState, QueryableState {
+                    val paid: Amount<TokenType> = Amount(0, amount.token),
+                    override val linearId: UniqueIdentifier = UniqueIdentifier()): Obligation<TokenType>(amount, borrower, lender), QueryableState {
     /**
      *  This property holds a list of the nodes which can "use" this state in a valid transaction. In this case, the
      *  lender or the borrower.
@@ -39,7 +43,7 @@ data class IOUState(val amount: Amount<Currency>,
      * - [pay] adds an amount to the paid property. It does no validation.
      * - [withNewLender] creates a copy of the current state with a newly specified lender. For use when transferring.
      */
-    fun pay(amountToPay: Amount<Currency>) = copy(paid = paid.plus(amountToPay))
+    fun pay(amountToPay: Amount<TokenType>) = copy(paid = paid.plus(amountToPay))
     fun withNewLender(newLender: Party) = copy(lender = newLender)
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState {
@@ -48,5 +52,24 @@ data class IOUState(val amount: Amount<Currency>,
     override fun supportedSchemas(): Iterable<MappedSchema> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
 }
+
+//data class IOUTokenStateObligation(
+//        val amount: Amount<IOUToken>,
+//        val lender: Party,
+//        val borrower: Party,
+//        val paid: Amount<IOUToken> = Amount(0, amount.token),
+//        override val linearId: UniqueIdentifier = UniqueIdentifier()
+//): Obligation<IOUToken>(amount, borrower, lender) {
+//    override val participants: List<Party> get() = listOf(lender, borrower)
+//}
+//
+//data class IOUFiatStateObligation(
+//        val amount: Amount<TokenType>,
+//        val lender: Party,
+//        val borrower: Party,
+//        val paid: Amount<TokenType> = Amount(0, amount.token),
+//        override val linearId: UniqueIdentifier = UniqueIdentifier()
+//): Obligation<TokenType>(amount, borrower, lender) {
+//    override val participants: List<Party> get() = listOf(lender, borrower)
+//}

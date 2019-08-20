@@ -43,11 +43,9 @@ dependencies {
     cordaCompile "$corda_release_group:corda-confidential-identities:$corda_release_version"
     cordaCompile "$tokens_release_group:tokens-contracts:$tokens_release_version"
     cordaCompile "$tokens_release_group:tokens-workflows:$tokens_release_version"
+    cordaCompile "$tokens_release_group:tokens-money:$tokens_release_version"
 
     testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
-
-    // CorDapp dependencies.
-    cordapp project(":contracts")
 
     // Jackson.
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.5"

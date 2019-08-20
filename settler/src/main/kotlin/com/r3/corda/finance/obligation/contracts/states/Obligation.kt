@@ -37,7 +37,7 @@ import java.time.Instant
  */
 
 @BelongsToContract(ObligationContract::class)
-data class Obligation<T : TokenType>(
+open class Obligation<T : TokenType>(
         /** Obligations are always denominated in some token type as we need a reference for FX purposes. */
         val faceAmount: Amount<T>,
         /** The payer. Can be pseudo-anonymous. */
@@ -87,17 +87,17 @@ data class Obligation<T : TokenType>(
     fun withSettlementMethod(settlementMethod: SettlementMethod?): Obligation<T> {
         return if (settlementStatus != SettlementStatus.UNSETTLED) {
             throw IllegalStateException("Cannot change settlement method after a payment has been made.")
-        } else copy(settlementMethod = settlementMethod)
+        } else Obligation<T>(faceAmount, obligor, obligee, dueBy, createdAt, settlementMethod, payments, linearId)
     }
 
     /** Update the due by date. */
-    fun withDueByDate(dueBy: Instant) = copy(dueBy = dueBy)
+    fun withDueByDate(dueBy: Instant) =  Obligation<T>(faceAmount, obligor, obligee, dueBy, createdAt, settlementMethod, payments, linearId)
 
     /** Update the due by date. */
     fun withNewCounterparty(oldParty: AbstractParty, newParty: AbstractParty): Obligation<T> {
         return when {
-            obligee == oldParty -> copy(obligee = newParty)
-            obligor == oldParty -> copy(obligor = newParty)
+            obligee == oldParty -> Obligation<T>(faceAmount, obligor, newParty, dueBy, createdAt, settlementMethod, payments, linearId)
+            obligor == oldParty -> Obligation<T>(faceAmount, newParty, obligee, dueBy, createdAt, settlementMethod, payments, linearId)
             else -> throw IllegalArgumentException("The oldParty is not recognised as a participant in this obligation.")
         }
     }
@@ -114,7 +114,9 @@ data class Obligation<T : TokenType>(
     fun withNewFaceValueQuantity(newAmount: Amount<T>): Obligation<T> {
         return if (newAmount < amountPaid) {
             throw IllegalStateException("Can't reduce the faceAmount to less than the current amountPaid.")
-        } else copy(faceAmount = newAmount)
+        } else Obligation<T>(newAmount,
+                obligor, obligee,
+                dueBy, createdAt, settlementMethod, payments, linearId)
     }
 
     /** Add a new payment to the payments list. */
@@ -123,7 +125,9 @@ data class Obligation<T : TokenType>(
         return if (newAmountPaid > faceAmount) {
             throw IllegalStateException("You cannot over pay an obligation.")
         } else {
-            copy(payments = payments + payment)
+            Obligation<T>(faceAmount,
+                    obligor, obligee,
+                    dueBy, createdAt, settlementMethod, payments + payment, linearId)
         }
     }
 
@@ -133,7 +137,9 @@ data class Obligation<T : TokenType>(
 
     /** Returns the obligation with well known identities. */
     fun withWellKnownIdentities(resolver: (AbstractParty) -> Party): Obligation<T> {
-        return copy(obligee = resolveParty(resolver, obligee), obligor = resolveParty(resolver, obligor))
+        return Obligation<T>(faceAmount,
+                resolveParty(resolver, obligee), resolveParty(resolver, obligor),
+                dueBy, createdAt, settlementMethod, payments, linearId)
     }
 
     override fun toString(): String {
