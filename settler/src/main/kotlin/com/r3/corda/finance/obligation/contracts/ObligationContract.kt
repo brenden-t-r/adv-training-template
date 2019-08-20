@@ -99,7 +99,7 @@ class ObligationContract : Contract {
                 Obligation<*>::obligee,
                 Obligation<*>::settlementMethod,
                 Obligation<*>::dueBy,
-                Obligation<*>::createdAt,
+                //Obligation<*>::createdAt,
                 Obligation<*>::payments
         )
         checkPropertyInvariants(input, output, invariantProperties)

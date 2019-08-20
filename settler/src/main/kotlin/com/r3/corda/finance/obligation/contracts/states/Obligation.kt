@@ -116,7 +116,7 @@ open class Obligation<T : TokenType>(
             throw IllegalStateException("Can't reduce the faceAmount to less than the current amountPaid.")
         } else Obligation<T>(newAmount,
                 obligor, obligee,
-                dueBy, createdAt, settlementMethod, payments, linearId)
+                dueBy, this.createdAt, settlementMethod, payments, linearId)
     }
 
     /** Add a new payment to the payments list. */
@@ -138,7 +138,7 @@ open class Obligation<T : TokenType>(
     /** Returns the obligation with well known identities. */
     fun withWellKnownIdentities(resolver: (AbstractParty) -> Party): Obligation<T> {
         return Obligation<T>(faceAmount,
-                resolveParty(resolver, obligee), resolveParty(resolver, obligor),
+                resolveParty(resolver, obligor), resolveParty(resolver, obligee),
                 dueBy, createdAt, settlementMethod, payments, linearId)
     }
 

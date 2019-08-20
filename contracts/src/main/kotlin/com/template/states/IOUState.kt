@@ -1,5 +1,6 @@
 package com.template.states
 
+import com.r3.corda.finance.obligation.contracts.ObligationContract
 import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.money.FiatCurrency
@@ -31,7 +32,7 @@ data class IOUState(val amount: Amount<TokenType>,
                     val lender: Party,
                     val borrower: Party,
                     val paid: Amount<TokenType> = Amount(0, amount.token),
-                    override val linearId: UniqueIdentifier = UniqueIdentifier()): Obligation<TokenType>(amount, borrower, lender), QueryableState {
+                    override val linearId: UniqueIdentifier = UniqueIdentifier()): Obligation<TokenType>(amount, borrower, lender) { // , QueryableState
     /**
      *  This property holds a list of the nodes which can "use" this state in a valid transaction. In this case, the
      *  lender or the borrower.
@@ -46,12 +47,12 @@ data class IOUState(val amount: Amount<TokenType>,
     fun pay(amountToPay: Amount<TokenType>) = copy(paid = paid.plus(amountToPay))
     fun withNewLender(newLender: Party) = copy(lender = newLender)
 
-    override fun generateMappedObject(schema: MappedSchema): PersistentState {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-    override fun supportedSchemas(): Iterable<MappedSchema> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+//    override fun generateMappedObject(schema: MappedSchema): PersistentState {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//    }
+//    override fun supportedSchemas(): Iterable<MappedSchema> {
+//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//    }
 }
 
 //data class IOUTokenStateObligation(
