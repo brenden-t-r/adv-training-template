@@ -1,7 +1,9 @@
 package com.template
 
 import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
+import com.r3.corda.finance.obligation.contracts.flows.AbstractSendToSettlementOracle
 import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.finance.obligation.oracle.flows.VerifySettlement
 import com.r3.corda.finance.obligation.workflows.flows.NovateObligation
 import com.r3.corda.finance.obligation.workflows.flows.OffLedgerSettleObligation
 import com.r3.corda.finance.obligation.workflows.flows.SendToSettlementOracle
@@ -37,6 +39,7 @@ class IOUSettlerTests {
             TestCordapp.findCordapp("com.template.contracts"),
             TestCordapp.findCordapp("com.template.flows"),
             TestCordapp.findCordapp("com.r3.corda.finance.obligation.workflows.flows"),
+            TestCordapp.findCordapp("com.r3.corda.finance.obligation.oracle.flows"),
             TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
             TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts")
     )))
@@ -48,6 +51,7 @@ class IOUSettlerTests {
         listOf(a, b, c).forEach {
             it.registerInitiatedFlow(QueryHandler::class.java)
             it.registerInitiatedFlow(SignHandler::class.java)
+            it.registerInitiatedFlow(VerifySettlement::class.java)
         }
     }
 

@@ -15,7 +15,9 @@ import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
 import com.r3.corda.finance.swift.types.SwiftSettlement
 import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.template.flows.BankApiPayment
 import com.template.flows.BankApiSettlement
+import jdk.nashorn.internal.parser.Token
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
@@ -35,6 +37,12 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
 
 
     enum class VerifyResult { TIMEOUT, SUCCESS, PENDING, REJECTED }
+
+    @Suspendable
+    fun verifyBankApiSettlement(apiPayment: BankApiPayment<TokenType>): VerifyResult {
+        return VerifyResult.SUCCESS
+        // TODO: Implement logic
+    }
 
     @Suspendable
     fun verifyXrpSettlement(obligation: Obligation<TokenType>, xrpPayment: XrpPayment<TokenType>): VerifyResult {
@@ -117,7 +125,7 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
         val verifyResult = when (settlementMethod) {
             is XrpSettlement -> verifyXrpSettlement(obligation, lastPayment as XrpPayment<TokenType>)
             is SwiftSettlement -> verifySwiftSettlement(lastPayment as SwiftPayment)
-            is BankApiSettlement -> throw IllegalStateException("Payment rail not implemented yet.")
+            is BankApiSettlement -> verifyBankApiSettlement(lastPayment as BankApiPayment)
             else -> throw IllegalStateException("Invalid settlement method $settlementMethod.")
         }
 

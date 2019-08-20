@@ -12,7 +12,6 @@ import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.template.states.IOUState
 import com.template.states.IOUToken
-import jdk.nashorn.internal.parser.Token
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.identity.Party
@@ -27,14 +26,14 @@ class BankApiOracleService(val services: AppServiceHub) : SingletonSerializeAsTo
 
     private fun checkObligeeReceivedPayment(
             payment: BankApiPayment<TokenType>,
-            obligation: Obligation<TokenType>
+            obligation: IOUState
     ): Boolean {
         return false
     }
 
     fun hasPaymentSettled(
             xrpPayment: XrpPayment<TokenType>,
-            obligation: Obligation<TokenType>
+            obligation: IOUState
     ): VerifySettlement.VerifyResult {
         return VerifySettlement.VerifyResult.REJECTED
     }
@@ -50,18 +49,6 @@ data class BankApiPayment<T : TokenType>(
     }
 }
 
-/*
-data class XrpSettlement(
-        override val accountToPay: String,
-        override val settlementOracle: Party,
-        override val paymentFlow: Class<MakeXrpPayment<*>> = MakeXrpPayment::class.java
-) : OffLedgerPayment<MakeXrpPayment<*>> {
-    override fun toString(): String {
-        return "Pay XRP address $accountToPay and use $settlementOracle as settlement ExchangeRateOracleService."
-    }
-}
- */
-
 data class BankApiSettlement(
         override val accountToPay: String,
         override val settlementOracle: Party,
@@ -71,16 +58,6 @@ data class BankApiSettlement(
         return "Pay XRP address $accountToPay and use $settlementOracle as settlement ExchangeRateOracleService."
     }
 }
-
-/*
-class MakeXrpPayment<T : TokenType>(
-        amount: Amount<T>,
-        obligationStateAndRef: StateAndRef<Obligation<*>>,
-        settlementMethod: OffLedgerPayment<*>,
-        progressTracker: ProgressTracker
-) : MakeOffLedgerPayment<T>(amount, obligationStateAndRef, settlementMethod, progressTracker) {
-
- */
 
 class MakeBankApiPayment<T : TokenType>(
         amount: Amount<T>,
@@ -94,15 +71,14 @@ class MakeBankApiPayment<T : TokenType>(
 
     }
 
-    //@Suspendable
+    @Suspendable
     override fun checkBalance(requiredAmount: Amount<*>) {
 
     }
 
     @Suspendable
     override fun makePayment(obligation: Obligation<*>, amount: Amount<T>): BankApiPayment<T> {
-        return BankApiPayment("paymentReferenceHere", amount, PaymentStatus.FAILED)
+        //return BankApiPayment("paymentReferenceHere", amount, PaymentStatus.FAILED)
+        return BankApiPayment("paymentReferenceHere", amount, PaymentStatus.SENT)
     }
-
-
 }
