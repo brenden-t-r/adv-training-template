@@ -64,27 +64,10 @@ class IOUSettlerTests {
     @After
     fun tearDown() = network.stopNodes()
 
+
+
     /**
      * Task 1
-     * TODO: Convert IOUState to be in terms of an Amount of Token SDK Tokens rather than Currency
-     * Hint:
-     *  -
-     */
-    //@Test
-    fun hasIOUAmountFieldOfCorrectType() {
-        // Does the amount field exist?
-        val field = IOUState::class.java.getDeclaredField("amount")
-
-        // Is the amount field of the correct type?
-        assertEquals(field.type, Amount::class.java)
-
-        // Does the amount field have the correct paramerized type?
-        val signature = (field.genericType as ParameterizedTypeImpl).actualTypeArguments[0]
-        assertEquals(signature, TokenType::class.java)
-    }
-
-    /**
-     * Task 2
      * TODO: Update IOUState to subclass the Obligation state from the Settler CorDapp in order
      * to allow integration of Settler with our IOU applicaton.
      * Hint:
@@ -96,7 +79,7 @@ class IOUSettlerTests {
     }
 
     /**
-     * Task X
+     * Task 2
      * TODO: Implement the CordaSettlerNovateIOUFlow
      * Steps:
      * 1) Get exchange rate from our ExchangeRateOracle
@@ -124,7 +107,7 @@ class IOUSettlerTests {
     }
 
     /**
-     * Task X
+     * Task 3
      * TODO: Implement the CordaSettlerUpdateSettlementMethodFlow
      * Steps:
 
@@ -154,12 +137,12 @@ class IOUSettlerTests {
     }
 
     /**
-     * Task X
+     * Task 4
      * TODO: Update VerifySettlement flow
      * Steps:
      */
     @Test
-    fun testUpdateVerifySettlementForBankApiSettlment() {
+    fun testUpdateVerifySettlementForBankApiSettlement() {
         // 1. Create obligation
         val iou = IOUState(
                 Amount(50, IOUToken("CUSTOM_TOKEN", 0)),
@@ -192,8 +175,8 @@ class IOUSettlerTests {
     }
 
     /**
-     * Task X
-     * TODO: Implement the CordaSettlerBankApiSettlement
+     * Task 5
+     * TODO: Implement the CordaSettlerBankApiSettlement Flow
      * Steps:
      */
     //@Test

@@ -42,6 +42,7 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
     fun verifyBankApiSettlement(apiPayment: BankApiPayment<TokenType>): VerifyResult {
         //return VerifyResult.REJECTED
         return VerifyResult.SUCCESS
+        // return oracleService.hasPaymentSettled(xrpPayment, obligation)
         // TODO: Implement logic
     }
 
