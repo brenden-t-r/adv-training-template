@@ -3,6 +3,7 @@ package com.template
 import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.flows.AbstractSendToSettlementOracle
 import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
 import com.r3.corda.finance.obligation.oracle.flows.VerifySettlement
 import com.r3.corda.finance.obligation.workflows.flows.NovateObligation
 import com.r3.corda.finance.obligation.workflows.flows.OffLedgerSettleObligation
@@ -46,6 +47,8 @@ class IOUSettlerTests {
     private val a = network.createNode()
     private val b = network.createNode()
     private val c = network.createNode(CordaX500Name("ExchangeRateOracleService", "New York", "US"))
+    private val d = network.createNode(CordaX500Name("SettlerOracleService", "New York", "US"))
+
 
     init {
         listOf(a, b, c).forEach {
@@ -93,22 +96,14 @@ class IOUSettlerTests {
     }
 
     /**
-     * Task 3
-     * TODO:
-     *  -
+     * Task X
+     * TODO: Implement the CordaSettlerNovateIOUFlow
+     * Steps:
+     * 1) Get exchange rate from our ExchangeRateOracle
+     * 2) Novate obligation with relevant currency
      */
-    @Test
-    fun test1() {
-        /*(*
-        Create obligation
-        Get exchange rate from FX-Oracle
-        Novate obligation with relevant currency (ex. XRP)
-        Add additional settlement terms
-        Initiate payment on the off-ledger rail
-        Obtain confirmation from Settler Oracle
-        Obtain signatures and settle the obligation
-         */
-
+    //@Test
+    fun testCordaSettlerNovateIOUFlow() {
         // 1. Create obligation
         val iou = IOUState(
                 Amount(50, IOUToken("CUSTOM_TOKEN", 0)),
@@ -119,62 +114,126 @@ class IOUSettlerTests {
         val result = createIouFuture.getOrThrow()
         val issuedIou = result.tx.outputStates.get(0) as IOUState
 
-        // 2. Get exchange rate from FX-Oracle
-        val exRateFuture = b.startFlow(QueryExchangeRate(c.info.legalIdentities.get(0), "USD"))
+        // 2. Novate
+        val novateFuture = b.startFlow(CordaSettlerNovateIOUFlow(issuedIou))
         network.runNetwork()
-        val resultFromOracle = exRateFuture.getOrThrow()
+        val resultFromNovate = novateFuture.getOrThrow().toLedgerTransaction(a.services).outputStates.get(0) as Obligation<TokenType>
 
-        // 3. Novate obligation with relevant currency (ex. XRP)
-        // TODO: Use NovateObligation flow or just do it ourselves?
-        val novateFuture = b.startFlow(NovateObligation.Initiator(
-                issuedIou.linearId,
-                ObligationCommands.Novate.UpdateFaceAmountToken(
-                        IOUToken("CUSTOM_TOKEN", 0),
-                        FiatCurrency.getInstance("USD"),
-                        c.info.legalIdentities.get(0),
-                        resultFromOracle
+        //assertEquals(resultFromNovate.toLedgerTransaction(a.services).outputStates.size, 1)
+        assertEquals(resultFromNovate.faceAmount.quantity, 75);
+    }
+
+    /**
+     * Task X
+     * TODO: Implement the CordaSettlerUpdateSettlementMethodFlow
+     * Steps:
+
+     */
+    //@Test
+    fun testCordaSettlerUpdateSettlementMethodFlow() {
+        // 1. Create obligation
+        val iou = IOUState(
+                Amount(50, IOUToken("CUSTOM_TOKEN", 0)),
+                a.info.legalIdentities.get(0),
+                b.info.legalIdentities.get(0))
+        val createIouFuture = b.startFlow(IOUIssueFlow(iou))
+        network.runNetwork()
+        val result = createIouFuture.getOrThrow()
+        val issuedIou = result.tx.outputStates.get(0) as IOUState
+
+        // 2. Novate
+        val novateFuture = a.startFlow(CordaSettlerNovateIOUFlow(issuedIou))
+        network.runNetwork()
+        val novatedIOU = novateFuture.getOrThrow().toLedgerTransaction(a.services).outputStates.get(0) as Obligation<TokenType>
+
+        val updateFuture = a.startFlow(CordaSettlerUpdateSettlementMethodFlow(novatedIOU, "ABCD1234"))
+        network.runNetwork()
+        val resultFromUpdate = updateFuture.getOrThrow().toLedgerTransaction(a.services).outputStates.get(0) as Obligation<TokenType>
+
+        assertEquals(resultFromUpdate.settlementMethod!!::class.java, BankApiSettlement::class.java);
+    }
+
+    /**
+     * Task X
+     * TODO: Update VerifySettlement flow
+     * Steps:
+     */
+    @Test
+    fun testUpdateVerifySettlementForBankApiSettlment() {
+        // 1. Create obligation
+        val iou = IOUState(
+                Amount(50, IOUToken("CUSTOM_TOKEN", 0)),
+                a.info.legalIdentities.get(0),
+                b.info.legalIdentities.get(0))
+        val createIouFuture = b.startFlow(IOUIssueFlow(iou))
+        network.runNetwork()
+        val result = createIouFuture.getOrThrow()
+        val issuedIou = result.tx.outputStates.get(0) as IOUState
+
+        // 2. Novate
+        val novateFuture = a.startFlow(CordaSettlerNovateIOUFlow(issuedIou))
+        network.runNetwork()
+        val novatedIOU = novateFuture.getOrThrow().toLedgerTransaction(a.services).outputStates.get(0) as Obligation<TokenType>
+
+        val updateFuture = a.startFlow(CordaSettlerUpdateSettlementMethodFlow(novatedIOU, "ABCD1234"))
+        network.runNetwork()
+        val resultUpdate = updateFuture.getOrThrow().toLedgerTransaction(a.services)
+        val resultFromUpdate = resultUpdate.outputStates.get(0) as Obligation<TokenType>
+        val stateRef = resultUpdate.outRef<Obligation<TokenType>>(0)
+
+        val tx = b.startFlow(
+                MakeBankApiPayment(Amount(75, FiatCurrency.getInstance("USD")),
+                        stateRef, resultFromUpdate.settlementMethod as BankApiSettlement))
+        network.runNetwork()
+
+        val oracleFuture = b.startFlow(SendToSettlementOracle(resultFromUpdate.linearId))
+        network.runNetwork()
+        val oracleResult = oracleFuture.getOrThrow()
+    }
+
+    /**
+     * Task X
+     * TODO: Implement the CordaSettlerBankApiSettlement
+     * Steps:
+     */
+    //@Test
+    fun testCordaSettlerBankApiSettlement() {
+        // 1. Create obligation
+        val iou = IOUState(
+                Amount(50, IOUToken("CUSTOM_TOKEN", 0)),
+                a.info.legalIdentities.get(0),
+                b.info.legalIdentities.get(0))
+        val createIouFuture = b.startFlow(IOUIssueFlow(iou))
+        network.runNetwork()
+        val result = createIouFuture.getOrThrow()
+        val issuedIou = result.tx.outputStates.get(0) as IOUState
+
+        // 2. Novate
+        val novateFuture = a.startFlow(CordaSettlerNovateIOUFlow(issuedIou))
+        network.runNetwork()
+        val novatedIOU = novateFuture.getOrThrow().toLedgerTransaction(a.services).outputStates.get(0) as Obligation<TokenType>
+
+        val updateFuture = a.startFlow(CordaSettlerUpdateSettlementMethodFlow(novatedIOU, "ABCD1234"))
+        network.runNetwork()
+        val resultFromUpdate = updateFuture.getOrThrow().toLedgerTransaction(a.services).outputStates.get(0) as Obligation<TokenType>
+
+        resultFromUpdate.withPayment(
+                BankApiPayment<TokenType>(
+                        "transaction #1234", Amount(75, IOUToken("CUSTOM_TOKEN", 0))
                 )
-        ))
+        )
+
+        val updateSettle = b.startFlow(CordaSettlerBankApiSettlement(resultFromUpdate))
         network.runNetwork()
-        val resultFromNovate = novateFuture.getOrThrow()
-        val novatedIou = resultFromNovate.toLedgerTransaction(b.services).outputStates.get(0) as Obligation<TokenType>
+        val resultFromSettle = updateFuture.getOrThrow().toLedgerTransaction(a.services).outputStates.get(0) as Obligation<TokenType>
 
-        // 4. Add additional settlement terms
-        val updateFuture = a.startFlow(UpdateSettlementMethod.Initiator(
-                issuedIou.linearId,
-                BankApiSettlement("ABCD1234", c.info.legalIdentities.get(0))
-        ))
-        network.runNetwork()
-        val resultFromUpdate = updateFuture.getOrThrow()
-
-        val finalFuture = b.startFlow(OffLedgerSettleObligation.Initiator(novatedIou.faceAmount, novatedIou.linearId))
-        network.runNetwork()
-        val stx = finalFuture.getOrThrow()
-
-        assertEquals(stx.outputStates.size, 1);
-
-//        val updatedIou = resultFromUpdate.toLedgerTransaction(b.services).outputStates.get(0) as IOUState
-//        val criteria = QueryCriteria.LinearStateQueryCriteria(
-//                null, listOf(issuedIou.linearId), Vault.StateStatus.UNCONSUMED, null)
-//        val queryResults = a.services.vaultService.queryBy(IOUState::class.java, criteria);
-//        val stateAndRef = queryResults.states.get(0) as StateAndRef<IOUState>
-//
-//        // 5. Initiate payment on the off-ledger rail
-//        val paymentFuture = b.startFlow(MakeBankApiPayment(
-//                updatedIou.amount,
-//                stateAndRef,
-//                BankApiSettlement("ABCD1234", c.info.legalIdentities.get(0))
-//        ))
-//        network.runNetwork()
-//        val resultFromPayment = paymentFuture.getOrThrow()
-//
-//        // 6. Obtain confirmation from Settler Oracle
-//        val settlementFuture = b.startFlow(SendToSettlementOracle(issuedIou.linearId))
-//        network.runNetwork()
-//        val oracleSigned = settlementFuture.getOrThrow()
-//
-//        // 7. Obtain signatures and settle the obligation
-//
+        // no ouputs, 1 input
+        // see that original IOU was settled. There should be no unconsumed IOU or Obligations in vault at this point
+        b.transaction {
+            assertEquals(0, b.services.vaultService.queryBy(IOUState::class.java).states.size)
+            assertEquals(1, b.services.vaultService.queryBy(Obligation::class.java).states.size)
+            assertEquals(PaymentStatus.SETTLED, b.services.vaultService.queryBy(Obligation::class.java).states.get(0).state.data.payments.get(0).status)
+        }
 
     }
 }

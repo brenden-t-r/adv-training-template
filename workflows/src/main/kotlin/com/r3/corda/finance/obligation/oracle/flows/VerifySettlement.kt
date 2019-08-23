@@ -40,6 +40,7 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
 
     @Suspendable
     fun verifyBankApiSettlement(apiPayment: BankApiPayment<TokenType>): VerifyResult {
+        //return VerifyResult.REJECTED
         return VerifyResult.SUCCESS
         // TODO: Implement logic
     }
