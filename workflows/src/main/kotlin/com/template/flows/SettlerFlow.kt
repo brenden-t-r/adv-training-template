@@ -134,8 +134,8 @@ data class BankApiSettlement(
 class MakeBankApiPayment<T : TokenType>(
         amount: Amount<T>,
         obligationStateAndRef: StateAndRef<Obligation<*>>,
-        settlementMethod: OffLedgerPayment<*>
-//        progressTracker: ProgressTracker
+        settlementMethod: OffLedgerPayment<*>,
+        progressTracker: ProgressTracker = MakeOffLedgerPayment.tracker()
 ) : MakeOffLedgerPayment<T>(amount, obligationStateAndRef, settlementMethod) {
 
     @Suspendable

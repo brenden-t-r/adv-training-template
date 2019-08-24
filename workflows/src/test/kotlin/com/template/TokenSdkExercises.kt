@@ -20,7 +20,7 @@ import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
 import kotlin.test.assertEquals
 
 
-class TokenIOUIssueFlowTests {
+class TokenSdkExercises {
     private val network = MockNetwork(MockNetworkParameters(cordappsForAllNodes = listOf(
             TestCordapp.findCordapp("com.template.contracts"),
             TestCordapp.findCordapp("com.template.flows"),
@@ -49,7 +49,7 @@ class TokenIOUIssueFlowTests {
      * Hint:
      *  -
      */
-    //@Test
+    @Test
     fun hasIOUAmountFieldOfCorrectType() {
         // Does the amount field exist?
         val field = IOUState::class.java.getDeclaredField("amount")
@@ -66,7 +66,7 @@ class TokenIOUIssueFlowTests {
      * Task 1
      * TODO: Implement TokenIOUIssueFlow
      */
-    //@Test
+    @Test
     fun test1() {
         val future = b.startFlow(TokenIOUIssueFlow(25))
         network.runNetwork()
