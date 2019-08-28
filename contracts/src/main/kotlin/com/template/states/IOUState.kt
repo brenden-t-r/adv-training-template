@@ -14,6 +14,7 @@ import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
 import java.util.*
+import javax.persistence.Column
 
 
 /**
@@ -32,7 +33,8 @@ data class IOUState(val amount: Amount<TokenType>,
                     val lender: Party,
                     val borrower: Party,
                     val paid: Amount<TokenType> = Amount(0, amount.token),
-                    override val linearId: UniqueIdentifier = UniqueIdentifier()): Obligation<TokenType>(amount, borrower, lender) { // , QueryableState
+                    override val linearId: UniqueIdentifier = UniqueIdentifier()
+): QueryableState, Obligation<TokenType>(amount, borrower, lender) { // , QueryableState
     /**
      *  This property holds a list of the nodes which can "use" this state in a valid transaction. In this case, the
      *  lender or the borrower.
@@ -47,30 +49,26 @@ data class IOUState(val amount: Amount<TokenType>,
     fun pay(amountToPay: Amount<TokenType>) = copy(paid = paid.plus(amountToPay))
     fun withNewLender(newLender: Party) = copy(lender = newLender)
 
-//    override fun generateMappedObject(schema: MappedSchema): PersistentState {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//    }
-//    override fun supportedSchemas(): Iterable<MappedSchema> {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//    }
+    // TODO("not implemented")
+    override fun generateMappedObject(schema: MappedSchema): PersistentState {
+        return if (schema is IOUCustomSchema) {
+            IOUCustomSchema.PersistentIOU(linearId.id, lender.name.toString(), borrower.name.toString(), amount.quantity)
+        } else {
+            throw IllegalArgumentException("Unrecognised schema \$schema")
+        }
+    }
+
+    override fun supportedSchemas(): Iterable<MappedSchema> {
+        return listOf(IOUCustomSchema())
+    }
+
 }
 
-//data class IOUTokenStateObligation(
-//        val amount: Amount<IOUToken>,
-//        val lender: Party,
-//        val borrower: Party,
-//        val paid: Amount<IOUToken> = Amount(0, amount.token),
-//        override val linearId: UniqueIdentifier = UniqueIdentifier()
-//): Obligation<IOUToken>(amount, borrower, lender) {
-//    override val participants: List<Party> get() = listOf(lender, borrower)
-//}
-//
-//data class IOUFiatStateObligation(
-//        val amount: Amount<TokenType>,
-//        val lender: Party,
-//        val borrower: Party,
-//        val paid: Amount<TokenType> = Amount(0, amount.token),
-//        override val linearId: UniqueIdentifier = UniqueIdentifier()
-//): Obligation<TokenType>(amount, borrower, lender) {
-//    override val participants: List<Party> get() = listOf(lender, borrower)
-//}
+class IOUCustomSchema : MappedSchema(IOUCustomSchema::class.java, 1, listOf(PersistentIOU::class.java)) {
+    class PersistentIOU(
+            @Column(nullable = false) val linearId: UUID,
+            @Column(nullable = false) val lender: String,
+            @Column(nullable = false) val borrower: String,
+            @Column(nullable = false) val amount: Long
+    ) : PersistentState() {}
+}
