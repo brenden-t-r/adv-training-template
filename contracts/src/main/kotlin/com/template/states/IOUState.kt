@@ -1,5 +1,9 @@
 package com.template.states
 
+import com.r3.corda.finance.obligation.contracts.ObligationContract
+import com.r3.corda.finance.obligation.contracts.states.Obligation
+import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.template.contracts.IOUContract
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.BelongsToContract
@@ -10,6 +14,8 @@ import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
 import java.util.*
+import javax.persistence.Column
+
 
 /**
  * The IOU State object, with the following properties:
@@ -23,11 +29,12 @@ import java.util.*
  *   except at issuance/termination.
  */
 @BelongsToContract(IOUContract::class)
-data class IOUState(val amount: Amount<Currency>,
+data class IOUState(val amount: Amount<TokenType>,
                     val lender: Party,
                     val borrower: Party,
-                    val paid: Amount<Currency> = Amount(0, amount.token),
-                    override val linearId: UniqueIdentifier = UniqueIdentifier()): LinearState, QueryableState {
+                    val paid: Amount<TokenType> = Amount(0, amount.token),
+                    override val linearId: UniqueIdentifier = UniqueIdentifier()
+): QueryableState, Obligation<TokenType>(amount, borrower, lender) { // , QueryableState
     /**
      *  This property holds a list of the nodes which can "use" this state in a valid transaction. In this case, the
      *  lender or the borrower.
@@ -39,14 +46,29 @@ data class IOUState(val amount: Amount<Currency>,
      * - [pay] adds an amount to the paid property. It does no validation.
      * - [withNewLender] creates a copy of the current state with a newly specified lender. For use when transferring.
      */
-    fun pay(amountToPay: Amount<Currency>) = copy(paid = paid.plus(amountToPay))
+    fun pay(amountToPay: Amount<TokenType>) = copy(paid = paid.plus(amountToPay))
     fun withNewLender(newLender: Party) = copy(lender = newLender)
 
+    // TODO("not implemented")
     override fun generateMappedObject(schema: MappedSchema): PersistentState {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-    override fun supportedSchemas(): Iterable<MappedSchema> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return if (schema is IOUCustomSchema) {
+            IOUCustomSchema.PersistentIOU(linearId.id, lender.name.toString(), borrower.name.toString(), amount.quantity)
+        } else {
+            throw IllegalArgumentException("Unrecognised schema \$schema")
+        }
     }
 
+    override fun supportedSchemas(): Iterable<MappedSchema> {
+        return listOf(IOUCustomSchema())
+    }
+
+}
+
+class IOUCustomSchema : MappedSchema(IOUCustomSchema::class.java, 1, listOf(PersistentIOU::class.java)) {
+    class PersistentIOU(
+            @Column(nullable = false) val linearId: UUID,
+            @Column(nullable = false) val lender: String,
+            @Column(nullable = false) val borrower: String,
+            @Column(nullable = false) val amount: Long
+    ) : PersistentState() {}
 }

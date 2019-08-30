@@ -16,9 +16,11 @@ dependencies {
 
     // Corda dependencies.
     cordaCompile "$corda_release_group:corda-core:$corda_release_version"
-
     cordaCompile "$tokens_release_group:tokens-contracts:$tokens_release_version"
     cordaCompile "$tokens_release_group:tokens-money:$tokens_release_version"
 
     testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
+
+    // CorDapp dependencies.
+    cordapp project(":settler")
 }

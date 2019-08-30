@@ -1,5 +1,6 @@
 package com.template.states
 
+import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.template.contracts.IOUContract
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.BelongsToContract

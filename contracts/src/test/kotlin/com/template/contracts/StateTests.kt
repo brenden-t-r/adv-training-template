@@ -7,6 +7,7 @@ import com.template.states.IOUToken
 import jdk.nashorn.internal.parser.Token
 import net.corda.core.contracts.*
 import net.corda.core.identity.Party
+import net.corda.core.schemas.QueryableState
 import net.corda.finance.*
 import org.glassfish.jersey.internal.util.ReflectionHelper.isSubClassOf
 import org.junit.Test
@@ -31,14 +32,9 @@ import kotlin.test.assertTrue
  */
 class StateTests {
 
-    @Test
-    fun iouTokenImplementsTokenTypeInterface() {
-        assertTrue(TokenType::class.java == IOUToken::class.java.superclass)
-    }
-
     /**
      * Task 1.
-     * TODO: Update our IOUState to use [IOUToken] rather than [Currency].
+     * TODO: ? Update our IOUState to use [IOUToken] rather than [Currency].
      * Hint: [Amount] can be used to specify an amount of IOUToken.
      */
     @Test
@@ -51,6 +47,12 @@ class StateTests {
 
         // Does the amount field have the correct paramerized type?
         val signature = (field.genericType as ParameterizedTypeImpl).actualTypeArguments[0]
-        assertEquals(signature, IOUToken::class.java)
+        assertEquals(TokenType::class.java, signature)
+    }
+
+    // TODO: Update our IOUState to implement the QueryableState interface.
+    @Test
+    fun implementQueryableStateOnIOU() {
+        assert(QueryableState::class.java.isAssignableFrom(IOUState::class.java))
     }
 }

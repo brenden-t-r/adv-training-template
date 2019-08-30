@@ -1,7 +1,7 @@
 buildscript {
     ext {
         corda_release_group = 'net.corda'
-        corda_release_version = '4.0'
+        corda_release_version = '4.1'
         corda_gradle_plugins_version = '4.0.42'
         kotlin_version = '1.2.71'
         junit_version = '4.12'
@@ -29,6 +29,12 @@ buildscript {
         classpath "net.corda.plugins:quasar-utils:$corda_gradle_plugins_version"
         classpath "org.springframework.boot:spring-boot-gradle-plugin:$spring_boot_gradle_plugin_version"
     }
+
+    configurations {
+        classpath {
+            exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+        }
+    }
 }
 
 allprojects {
@@ -38,8 +44,10 @@ allprojects {
         mavenLocal()
         jcenter()
         mavenCentral()
-        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-releases' }
         maven { url 'https://jitpack.io' }
+        maven { url 'https://repo.gradle.org/gradle/libs-releases' }
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-releases' }
+        maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-dev" }
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-lib' }
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-lib-dev' }
     }
@@ -72,6 +80,7 @@ sourceSets {
     }
 }
 
+
 dependencies {
     // Corda dependencies.
     cordaCompile "$corda_release_group:corda-core:$corda_release_version"
@@ -85,9 +94,9 @@ dependencies {
     cordapp project(":workflows")
     cordapp project(":contracts")
 
-    cordaCompile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
-    cordaCompile "org.apache.logging.log4j:log4j-web:${log4j_version}"
-    cordaCompile "org.slf4j:jul-to-slf4j:$slf4j_version"
+//    cordaCompile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
+//    cordaCompile "org.apache.logging.log4j:log4j-web:${log4j_version}"
+//    cordaCompile "org.slf4j:jul-to-slf4j:$slf4j_version"
 }
 
 cordapp {
