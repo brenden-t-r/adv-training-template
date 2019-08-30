@@ -1,6 +1,11 @@
 package com.template
 
+import com.template.flows.IOUIssueFlow
+import com.template.states.IOUState
+import com.template.states.IOUToken
+import net.corda.core.contracts.Amount
 import net.corda.core.identity.CordaX500Name
+import net.corda.core.messaging.startFlow
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.DriverDSL
@@ -27,6 +32,14 @@ class DriverBasedTest {
         // and other important metrics to ensure that your CorDapp is working as intended.
         assertEquals(bankB.name, partyAHandle.resolveName(bankB.name))
         assertEquals(bankA.name, partyBHandle.resolveName(bankA.name))
+
+        val token = IOUState(Amount(50, IOUToken("IOU_TOKEN", 2)), bankA.party, bankB.party)
+        val future = partyAHandle.rpc.startFlow(::IOUIssueFlow, token).returnValue
+        future.then {
+            val results = partyAHandle.rpc.vaultQuery(IOUState::class.java)
+            assertEquals(1, results.states.size)
+        }
+
     }
 
     // Runs a test inside the Driver DSL, which provides useful functions for starting nodes, etc.

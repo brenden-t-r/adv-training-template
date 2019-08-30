@@ -93,6 +93,7 @@ dependencies {
     // CorDapp dependencies.
     cordapp project(":workflows")
     cordapp project(":contracts")
+    cordapp project(":settler")
 
 //    cordaCompile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
 //    cordaCompile "org.apache.logging.log4j:log4j-web:${log4j_version}"
@@ -115,6 +116,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         }
         cordapp project(':contracts')
         cordapp project(':workflows')
+        cordapp project(':settler')
     }
     node {
         name "O=Notary,L=London,C=GB"

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run Template Cordapp" type="JetRunConfigurationType" factoryName="Kotlin" singleton="true">
-    <module name="com.template.workflows.test" />
+    <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
     <option name="VM_PARAMETERS" value="-ea -javaagent:lib/quasar.jar" />
     <option name="PROGRAM_PARAMETERS" value="" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
@@ -8,8 +8,8 @@
     <option name="PASS_PARENT_ENVS" value="true" />
     <option name="MAIN_CLASS_NAME" value="com.template.NodeDriverKt" />
     <option name="WORKING_DIRECTORY" value="" />
-    <method v="2">
-      <option name="Make" enabled="true" />
-    </method>
+    <module name="workflows_test" />
+    <envs />
+    <method />
   </configuration>
 </component>
