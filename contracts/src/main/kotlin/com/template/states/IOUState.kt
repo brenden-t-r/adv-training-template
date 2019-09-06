@@ -15,6 +15,7 @@ import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
 import java.util.*
 import javax.persistence.Column
+import javax.persistence.Entity
 
 
 /**
@@ -65,6 +66,7 @@ data class IOUState(val amount: Amount<TokenType>,
 }
 
 class IOUCustomSchema : MappedSchema(IOUCustomSchema::class.java, 1, listOf(PersistentIOU::class.java)) {
+    @Entity
     class PersistentIOU(
             @Column(nullable = false) val linearId: UUID,
             @Column(nullable = false) val lender: String,
