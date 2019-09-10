@@ -20,7 +20,12 @@ class ContractTests {
     val ALICE = TestIdentity(CordaX500Name(organisation = "Alice", locality = "TestLand", country = "US"))
     val BOB = TestIdentity(CordaX500Name(organisation = "Bob", locality = "TestCity", country = "US"))
 
-    // Task: TODO: Implement state grouping for the Merge command.
+    /**
+     * TODO: Implement state grouping for the Merge command.
+     * Hint:
+     * -
+     */
+
     @Test
     fun `state grouping test`() {
         val token1 = IOUState(Amount(50, IOUToken("IOU_TOKEN", 2)), ALICE.party, BOB.party)
@@ -40,8 +45,9 @@ class ContractTests {
                 input(IOUContract.IOU_CONTRACT_ID, token3)
                 input(IOUContract.IOU_CONTRACT_ID, token4)
                 output(IOUContract.IOU_CONTRACT_ID, output2)
-                command(listOf(ALICE.publicKey, BOB.publicKey), IOUContract.Commands.Merge()) // Wrong type.
-                this.fails()
+                command(listOf(ALICE.publicKey, BOB.publicKey), IOUContract.Commands.Merge())
+                this.fails() // Not the same token identifier
+
             }
             transaction {
                 input(IOUContract.IOU_CONTRACT_ID, token1)
@@ -50,8 +56,8 @@ class ContractTests {
                 input(IOUContract.IOU_CONTRACT_ID, token4)
                 output(IOUContract.IOU_CONTRACT_ID, output1)
                 output(IOUContract.IOU_CONTRACT_ID, invalidOutput)
-                command(listOf(ALICE.publicKey, BOB.publicKey), IOUContract.Commands.Merge()) // Wrong type.
-                this.fails()
+                command(listOf(ALICE.publicKey, BOB.publicKey), IOUContract.Commands.Merge())
+                this `fails with` "Output total must equal input total for each token identifier" // Incorrect merge sum
             }
             transaction {
                 input(IOUContract.IOU_CONTRACT_ID, token1)
@@ -60,7 +66,7 @@ class ContractTests {
                 input(IOUContract.IOU_CONTRACT_ID, token4)
                 output(IOUContract.IOU_CONTRACT_ID, output1)
                 output(IOUContract.IOU_CONTRACT_ID, output2)
-                command(listOf(ALICE.publicKey, BOB.publicKey), IOUContract.Commands.Merge()) // Wrong type.
+                command(listOf(ALICE.publicKey, BOB.publicKey), IOUContract.Commands.Merge())
                 this.verifies()
             }
         }

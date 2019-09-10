@@ -33,24 +33,22 @@ import kotlin.test.assertTrue
 class StateTests {
 
     /**
-     * Task 1.
-     * TODO: ? Update our IOUState to use [IOUToken] rather than [Currency].
-     * Hint: [Amount] can be used to specify an amount of IOUToken.
+     * TODO: Turn the [IOUState] into a [QueryableState].
+     * Hint:
+     * - [QueryableState] implements [ContractState] and has two additional function requirements.
+     * - Update the IOU State to implement the [QueryableState].
+     * -- There will be compilation errors until we finish the remaining steps.
+     * - Create custom [MappedSchema] and [PersistentState] subclass implementations.
+     * -- We need to create a custom implementation of the [MappedSchema] class.
+     * -- Nest within our custom [MappedSchema] class, we will need a custom implementation of a [PersistentState].
+     * -- This uses JPA (Java Persistence API) notation to define how the state will be stored in the database.
+     * -- Use the @Entity annotation for our [PersistentState] to define it as a database table enumeration.
+     * -- Use the @Column annotation on each field within the [PersistentState] to define the table columns.
+     * - Implement the [supportedSchemas] and [generateMappedObject] methods from the [QueryableState] interface.
+     * -- [generateMappedObject] takes in a MappedSchema instance and returns the corresponding PersistentState.
+     * -- In this way, we could potentially have multiple Schema definitions.
+     * -- [supportedSchemas] simply returns a list of schemas supported by this QueryableState.
      */
-    @Test
-    fun hasIOUAmountFieldOfCorrectType() {
-        // Does the amount field exist?
-        val field = IOUState::class.java.getDeclaredField("amount")
-
-        // Is the amount field of the correct type?
-        assertEquals(field.type, Amount::class.java)
-
-        // Does the amount field have the correct paramerized type?
-        val signature = (field.genericType as ParameterizedTypeImpl).actualTypeArguments[0]
-        assertEquals(TokenType::class.java, signature)
-    }
-
-    // TODO: Update our IOUState to implement the QueryableState interface.
     @Test
     fun implementQueryableStateOnIOU() {
         assert(QueryableState::class.java.isAssignableFrom(IOUState::class.java))

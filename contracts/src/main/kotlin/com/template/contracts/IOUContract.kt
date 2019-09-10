@@ -69,8 +69,6 @@ class IOUContract : Contract {
                     inOutGroup.inputs
                     inOutGroup.outputs
 
-                    print ("MERGING " + inOutGroup.groupingKey)
-
                     var inputTotal = 0L
                     var outputTotal = 0L
                     for (input in inOutGroup.inputs) {

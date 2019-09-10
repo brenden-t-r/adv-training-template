@@ -49,7 +49,6 @@ data class IOUState(val amount: Amount<TokenType>,
     fun pay(amountToPay: Amount<TokenType>) = copy(paid = paid.plus(amountToPay))
     fun withNewLender(newLender: Party) = copy(lender = newLender)
 
-    // TODO("not implemented")
     override fun generateMappedObject(schema: MappedSchema): PersistentState {
         return if (schema is IOUCustomSchema) {
             IOUCustomSchema.PersistentIOU(linearId.id, lender.name.toString(), borrower.name.toString(), amount.quantity)
