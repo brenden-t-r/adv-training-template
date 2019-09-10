@@ -2,7 +2,6 @@ package com.template.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.money.USD
-import com.template.contracts.ExchangeRateContract
 import com.template.contracts.IOUContract
 import com.template.states.IOUState
 import com.template.states.IOUTokenState
@@ -13,6 +12,7 @@ import net.corda.core.crypto.TransactionSignature
 import net.corda.core.flows.*
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
+import net.corda.core.node.AppServiceHub
 import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
@@ -56,14 +56,6 @@ class ExchangeRateOracleFlow(val ptx: SignedTransaction) : FlowLogic<SignedTrans
     }
 }
 
-//@InitiatedBy(ExchangeRateOracleFlow::class)
-//class FxOracleFlowResponder(val counterpartySession: FlowSession) : FlowLogic<Unit>() {
-//    @Suspendable
-//    override fun call() {
-//        // Responder flow logic goes here.
-//    }
-//}
-
 @InitiatingFlow
 class QueryExchangeRate(val oracle: Party, val currencyCode: String) : FlowLogic<Double>() {
     @Suspendable
@@ -101,7 +93,7 @@ class SignHandler(val session: FlowSession) : FlowLogic<Unit>() {
 }
 
 @CordaService
-class ExchangeRateOracleService(val services: ServiceHub) : SingletonSerializeAsToken() {
+class ExchangeRateOracleService(val services: AppServiceHub) : SingletonSerializeAsToken() {
     private val myKey = services.myInfo.legalIdentities.first().owningKey
     fun query(currencyCode: String): Double {
         // Query external data source and return result
@@ -116,8 +108,8 @@ class ExchangeRateOracleService(val services: ServiceHub) : SingletonSerializeAs
         ftx.verify() // Check the partial Merkle tree is valid.
 
         fun isCommandCorrect(elem: Any) = when {
-            elem is Command<*> && elem.value is ExchangeRateContract.Exchange -> {
-                val cmdData = elem.value as ExchangeRateContract.Exchange
+            elem is Command<*> && elem.value is IOUContract.Commands.Exchange -> {
+                val cmdData = elem.value as IOUContract.Commands.Exchange
                 myKey in elem.signers && query(cmdData.currency) == cmdData.rate
             }
             else -> {
