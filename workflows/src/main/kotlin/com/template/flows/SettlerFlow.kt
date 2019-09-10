@@ -12,7 +12,6 @@ import com.r3.corda.finance.obligation.workflows.flows.MakeOffLedgerPayment
 import com.r3.corda.finance.obligation.workflows.flows.NovateObligation
 import com.r3.corda.finance.obligation.workflows.flows.OffLedgerSettleObligation
 import com.r3.corda.finance.obligation.workflows.flows.UpdateSettlementMethod
-import com.r3.corda.finance.ripple.types.XrpPayment
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.r3.corda.lib.tokens.workflows.utilities.toParty
@@ -104,7 +103,7 @@ class BankApiOracleService(val services: AppServiceHub) : SingletonSerializeAsTo
     }
 
     fun hasPaymentSettled(
-            xrpPayment: XrpPayment<TokenType>,
+            payment: BankApiPayment<TokenType>,
             obligation: IOUState
     ): VerifySettlement.VerifyResult {
         return VerifySettlement.VerifyResult.REJECTED

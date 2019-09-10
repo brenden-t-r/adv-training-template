@@ -1,7 +1,6 @@
 package com.template
 
 import com.r3.corda.lib.tokens.money.FiatCurrency
-import com.template.contracts.ExchangeRateContract
 import com.template.contracts.IOUContract
 import com.template.flows.*
 import com.template.flows.ExchangeRateOracleFlow
@@ -89,7 +88,7 @@ class OracleExercises {
                 a.services.myInfo.legalIdentities.get(0),
                 b.services.myInfo.legalIdentities.get(0))
         builder.addCommand(
-                ExchangeRateContract.Exchange("USD", rate /* Invalid rate */),
+                IOUContract.Commands.Exchange("USD", rate /* Invalid rate */),
                 listOf(c.info.legalIdentities.get(0).owningKey, a.info.legalIdentities.get(0).owningKey))
         builder.addOutputState(output, IOUContract.IOU_CONTRACT_ID)
 
@@ -98,7 +97,7 @@ class OracleExercises {
         val ftx = ptx.buildFilteredTransaction(Predicate {
             when (it) {
                 is Command<*> -> c.info.legalIdentities.get(0).owningKey in it.signers
-                        && it.value is ExchangeRateContract.Exchange
+                        && it.value is IOUContract.Commands.Exchange
                 else -> false
             }
         })
@@ -127,7 +126,7 @@ class OracleExercises {
 
         // Update builder with value
         builder.addCommand(
-                ExchangeRateContract.Exchange("USD", resultFromOracle),
+                IOUContract.Commands.Exchange("USD", resultFromOracle),
                 listOf(c.info.legalIdentities.get(0).owningKey, a.info.legalIdentities.get(0).owningKey)
         )
         val iouTokenState = IOUTokenState(

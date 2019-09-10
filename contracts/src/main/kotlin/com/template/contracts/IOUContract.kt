@@ -31,6 +31,7 @@ class IOUContract : Contract {
         class Issue : TypeOnlyCommandData(), Commands, ObligationCommands
         class Transfer : TypeOnlyCommandData(), Commands, ObligationCommands
         class Merge: TypeOnlyCommandData(), Commands, ObligationCommands
+        class Exchange(val currency: String, val rate: Double) : Commands, ObligationCommands
     }
 
     /**
@@ -38,7 +39,7 @@ class IOUContract : Contract {
      * The constraints are self documenting so don't require any additional explanation.
      */
     override fun verify(tx: LedgerTransaction) {
-        val command = tx.commands.requireSingleCommand<ObligationCommands>()
+        val command = tx.commandsOfType<ObligationCommands>().first()
         when (command.value) {
             is Commands.Issue -> requireThat {
                 "No inputs should be consumed when issuing an IOU." using (tx.inputs.isEmpty())

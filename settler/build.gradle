@@ -5,6 +5,12 @@ cordapp {
     targetPlatformVersion corda_platform_version.toInteger()
     minimumPlatformVersion corda_platform_version.toInteger()
     signing.enabled false
+    workflow {
+        name "Settler CorDapp"
+        vendor "Corda Open Source"
+        licence "Apache License, Version 2.0"
+        versionId 1
+    }
 }
 
 sourceSets {
@@ -51,7 +57,7 @@ dependencies {
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.5"
 
     // Ripple library.
-    compile group: 'network.quant', name: 'overledger-sdk-ripple', version: '1.0.0-alpha'
+    //compile group: 'network.quant', name: 'overledger-sdk-ripple', version: '1.0.0-alpha'
 
     // Typesafe config.
     compile 'com.typesafe:config:1.3.4'

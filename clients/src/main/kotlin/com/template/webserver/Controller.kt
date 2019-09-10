@@ -1,10 +1,24 @@
 package com.template.webserver
 
-import com.template.flows.IOUIssueFlow
+//import com.template.flows.IOUIssueFlow
+//import com.template.states.IOUCustomSchema
+//import com.template.states.IOUState
+//import com.template.states.IOUToken
+import com.template.states.IOUCustomSchema
 import com.template.states.IOUState
 import net.corda.core.contracts.Amount
+import net.corda.core.contracts.StateAndRef
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.CordaX500Name
+import net.corda.core.messaging.CordaRPCOps
+import net.corda.core.messaging.startFlow
 import net.corda.core.messaging.startTrackedFlow
+import net.corda.core.messaging.vaultQueryBy
+import net.corda.core.node.services.Vault
+import net.corda.core.node.services.vault.Builder
+import net.corda.core.node.services.vault.CriteriaExpression
+import net.corda.core.node.services.vault.QueryCriteria
+import net.corda.core.node.services.vault.builder
 import org.slf4j.LoggerFactory
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -14,37 +28,38 @@ import java.util.*
  */
 @RestController
 @RequestMapping("/") // The paths for HTTP requests are relative to this base path.
-class Controller(rpc: NodeRPCConnection) {
+class Controller(proxy: CordaRPCOps) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(RestController::class.java)
     }
 
-    private val proxy = rpc.proxy
+    private var proxy = proxy
 
-    @GetMapping(value = "/templateendpoint", produces = arrayOf("text/plain"))
-    private fun templateendpoint(): String {
-        return proxy.nodeInfo().legalIdentities[0].name.organisation
-        //return "Define an endpoint here."
+    @GetMapping(value = "/getIOUs")
+    public fun getIOUs(): List<StateAndRef<IOUState>>? {
+        //return null;
+        return proxy.vaultQuery(IOUState::class.java).states
     }
 
-    @GetMapping(value = "/issue-iou/{amount}/{party}", produces = arrayOf("text/plain"))
-    fun issueIOU(@PathVariable(value = "amount") amount: Int,
-                 @PathVariable(value = "party") party: String): String {
-        // Get party objects for myself and the counterparty.
-        val me = proxy.nodeInfo().legalIdentities.first()
-        val lender = proxy.wellKnownPartyFromX500Name(CordaX500Name.parse(party)) ?: throw IllegalArgumentException("Unknown party name.")
-        // Create a new IOU state using the parameters given.
-        try {
-            val state = IOUState(Amount(amount.toLong() * 100, Currency.getInstance("USD")), lender, me)
-            // Start the IOUIssueFlow. We block and waits for the flow to return.
-            val result = proxy.startTrackedFlow(::IOUIssueFlow, state).returnValue.get()
-            // Return the response.
-            return "Transaction id ${result.id} committed to ledger.\n${result.tx.outputs.single()}"
-            // For the purposes of this demo app, we do not differentiate by exception type.
-        } catch (e: Exception) {
-            return e.message.toString();
-        }
+    @GetMapping(value = "/getIOUs/linearId/{linearId}")
+    public fun getIousWithLinearId(@PathVariable linearId: String): List<StateAndRef<IOUState>>? {
+        //return null;
+        val linearId = UniqueIdentifier.fromString(linearId)
+        val criteria = QueryCriteria.LinearStateQueryCriteria(
+                null, listOf(linearId));
+        return proxy.vaultQueryBy<IOUState>(criteria).states
+    }
+
+    @GetMapping(value = "/getIOUs/greaterThan/{amount}")
+    public fun getIOUsWithAmountGreaterThan(@PathVariable amount: Long): List<StateAndRef<IOUState>>? {
+        //return null;
+        return builder {
+            val criteria = QueryCriteria.VaultCustomQueryCriteria(
+                    IOUCustomSchema.PersistentIOU::amount.greaterThan(amount)
+            )
+            proxy.vaultQueryBy<IOUState>(criteria)
+        }.states
     }
 
 }
