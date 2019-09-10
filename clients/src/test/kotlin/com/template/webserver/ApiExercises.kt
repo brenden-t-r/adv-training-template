@@ -57,7 +57,7 @@ class ApiExercises {
     @After
     fun tearDown() = network.stopNodes()
 
-    @Test
+    //@Test
     fun testIouIssueFlow() {
         val iou = IOUState(Amount(50, IOUToken("IOU_TOKEN", 2)), a.info.legalIdentities.get(0), b.info.legalIdentities.get(0))
 

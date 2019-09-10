@@ -1,5 +1,6 @@
 package com.template.webserver
 
+import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.template.flows.IOUIssueFlow
 import com.template.states.IOUState
 import com.template.states.IOUToken
@@ -30,7 +31,7 @@ class DriverBasedTest {
     private val bankA = TestIdentity(CordaX500Name("BankA", "", "GB"))
     private val bankB = TestIdentity(CordaX500Name("BankB", "", "US"))
 
-    //@Test
+    @Test
     fun `node test`() = withDriver {
         // Start a pair of nodes and wait for them both to be ready.
         val (partyAHandle, partyBHandle) = startNodes(bankA, bankB)
@@ -54,22 +55,14 @@ class DriverBasedTest {
         bobVaultUpdates.expectEvents {
             expect { update ->
                 println("Bob got vault update of $update")
+                val amount: Amount<TokenType> = update.produced.first().state.data.amount
+                assertEquals(50, amount.quantity)
             }
         }
 
-//
-//
-//
-//
-//
-//        val results = partyAHandle.rpc.vaultQuery(IOUState::class.java)
-//        print("\n\nTEST ASDF")
-//        assertEquals(3, results.states.size)
-//
-//        val controller = Controller(partyAHandle.rpc)
-//        print("\n\n TEST 123 : " + controller.getIOUs()!!.size)
-//        assertEquals(2, controller.getIOUs()!!.size)
-
+        val result = Controller(partyAHandle.rpc).getIOUs()!!
+        assertEquals(1, result.size)
+        assertEquals(52, result.get(0).state.data.amount.quantity)
     }
 
     // Runs a test inside the Driver DSL, which provides useful functions for starting nodes, etc.

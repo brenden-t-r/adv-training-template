@@ -1,18 +1,24 @@
 package com.template
 
+import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.template.flows.IOUIssueFlow
 import com.template.states.IOUState
 import com.template.states.IOUToken
 import net.corda.core.contracts.Amount
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.messaging.startFlow
+import net.corda.core.messaging.vaultTrackBy
+import net.corda.core.node.services.Vault
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.core.TestIdentity
+import net.corda.testing.core.expect
+import net.corda.testing.core.expectEvents
 import net.corda.testing.driver.DriverDSL
 import net.corda.testing.driver.DriverParameters
 import net.corda.testing.driver.NodeHandle
 import net.corda.testing.driver.driver
 import org.junit.Test
+import rx.Observable
 import java.util.concurrent.Future
 import kotlin.test.assertEquals
 
@@ -33,11 +39,20 @@ class DriverBasedTest {
         assertEquals(bankB.name, partyAHandle.resolveName(bankB.name))
         assertEquals(bankA.name, partyBHandle.resolveName(bankA.name))
 
-        val token = IOUState(Amount(50, IOUToken("IOU_TOKEN", 2)), bankA.party, bankB.party)
-        val future = partyAHandle.rpc.startFlow(::IOUIssueFlow, token).returnValue
-        future.then {
-            val results = partyAHandle.rpc.vaultQuery(IOUState::class.java)
-            assertEquals(1, results.states.size)
+        val bobVaultUpdates: Observable<Vault.Update<IOUState>> = partyAHandle.rpc.vaultTrackBy<IOUState>().updates
+
+        val token = IOUState(Amount(50, IOUToken("IOU_TOKEN", 2)),
+                partyAHandle.rpc.wellKnownPartyFromX500Name(bankA.name)!!, partyAHandle.rpc.wellKnownPartyFromX500Name(bankB.name)!!)
+
+
+        partyBHandle.rpc.startFlow(::IOUIssueFlow, token).returnValue.getOrThrow()
+
+        bobVaultUpdates.expectEvents {
+            expect { update ->
+                println("Bob got vault update of $update")
+                val amount: Amount<TokenType> = update.produced.first().state.data.amount
+                assertEquals(51, amount.quantity)
+            }
         }
 
     }

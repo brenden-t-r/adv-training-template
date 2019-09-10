@@ -90,6 +90,8 @@ dependencies {
     cordaCompile "$tokens_release_group:tokens-workflows:$tokens_release_version"
     cordaCompile "$tokens_release_group:tokens-money:$tokens_release_version"
 
+    compile 'org.hibernate:hibernate-validator:6.0.13.Final'
+
     // CorDapp dependencies.
     cordapp project(":workflows")
     cordapp project(":contracts")

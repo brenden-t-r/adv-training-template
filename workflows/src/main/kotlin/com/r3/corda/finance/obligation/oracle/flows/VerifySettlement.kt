@@ -7,9 +7,6 @@ import com.r3.corda.finance.obligation.contracts.flows.AbstractSendToSettlementO
 import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
 import com.r3.corda.finance.obligation.contracts.types.SettlementOracleResult
-import com.r3.corda.finance.obligation.oracle.services.XrpOracleService
-import com.r3.corda.finance.ripple.types.XrpPayment
-import com.r3.corda.finance.ripple.types.XrpSettlement
 import com.r3.corda.finance.swift.services.SWIFTService
 import com.r3.corda.finance.swift.types.SWIFTPaymentStatusType
 import com.r3.corda.finance.swift.types.SwiftPayment
@@ -17,7 +14,6 @@ import com.r3.corda.finance.swift.types.SwiftSettlement
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.template.flows.BankApiPayment
 import com.template.flows.BankApiSettlement
-import jdk.nashorn.internal.parser.Token
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
@@ -42,27 +38,11 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
     fun verifyBankApiSettlement(apiPayment: BankApiPayment<TokenType>): VerifyResult {
         //return VerifyResult.REJECTED
         return VerifyResult.SUCCESS
-        // return oracleService.hasPaymentSettled(xrpPayment, obligation)
+        // return oracleService.hasPaymentSettled(apiPayment, obligation)
         // TODO: Implement logic
     }
 
-    @Suspendable
-    fun verifyXrpSettlement(obligation: Obligation<TokenType>, xrpPayment: XrpPayment<TokenType>): VerifyResult {
-        val oracleService = serviceHub.cordaService(XrpOracleService::class.java)
-        // We wait for a couple of sessions before checking for settlement (The ripple nodes need to catch-up).
-        sleep(Duration.ofSeconds(INITIAL_TIME_TO_WAIT_FOR_SETTLEMENT))
-        while (true) {
-            logger.info("Checking for settlement...")
-            val result = oracleService.hasPaymentSettled(xrpPayment, obligation)
-            when (result) {
-                VerifyResult.SUCCESS, VerifyResult.TIMEOUT, VerifyResult.REJECTED -> return result
-                // Sleep for five seconds before we try again. The ExchangeRateOracleService might receive the request to verify payment
-                // before the payment succeed. Also it takes a bit of time for all the nodes to receive the new ledger
-                // version. Note: sleep is a suspendable operation.
-                VerifyResult.PENDING -> sleep(Duration.ofSeconds(RETRY_TIME_TO_WAIT_FOR_SETTLEMENT))
-            }
-        }
-    }
+
 
     @Suspendable
     fun verifySwiftSettlement(swiftPayment: SwiftPayment<TokenType>): VerifyResult {
@@ -125,7 +105,6 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
 
         // 4. Handle different settlement methods.
         val verifyResult = when (settlementMethod) {
-            is XrpSettlement -> verifyXrpSettlement(obligation, lastPayment as XrpPayment<TokenType>)
             is SwiftSettlement -> verifySwiftSettlement(lastPayment as SwiftPayment)
             is BankApiSettlement -> verifyBankApiSettlement(lastPayment as BankApiPayment)
             else -> throw IllegalStateException("Invalid settlement method $settlementMethod.")

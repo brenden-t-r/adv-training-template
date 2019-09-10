@@ -1,5 +1,6 @@
 package com.r3.corda.finance.obligation.contracts.commands
 
+import co.paralleluniverse.fibers.Suspendable
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.r3.corda.finance.obligation.contracts.types.PaymentReference
@@ -30,6 +31,8 @@ interface ObligationCommands : CommandData {
             JsonSubTypes.Type(value = Novate.UpdateDueBy::class, name = "dueBy"),
             JsonSubTypes.Type(value = Novate.UpdateParty::class, name = "party")
     )
+
+    @Suspendable
     sealed class Novate : ObligationCommands {
 
         /** Change the face value quantity of the obligation. */
