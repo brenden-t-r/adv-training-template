@@ -23,7 +23,6 @@ import javax.persistence.Entity
  * - [amount] The amount owed by the [borrower] to the [lender]
  * - [lender] The lending party.
  * - [borrower] The borrowing party.
- * - [contract] Holds a reference to the [IOUContract]
  * - [paid] Records how much of the [amount] has been paid.
  * - [linearId] A unique id shared by all LinearState states representing the same agreement throughout history within
  *   the vaults of all parties. Verify methods should check that one input and one output share the id in a transaction,

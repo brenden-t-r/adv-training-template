@@ -22,7 +22,7 @@ class ContractTests {
 
     // Task: TODO: Implement state grouping for the Merge command.
     @Test
-    fun `dummy test`() {
+    fun `state grouping test`() {
         val token1 = IOUState(Amount(50, IOUToken("IOU_TOKEN", 2)), ALICE.party, BOB.party)
         val token2 = IOUState(Amount(100, IOUToken("IOU_TOKEN", 2)), ALICE.party, BOB.party)
         val token3 = IOUState(Amount(100, IOUToken("DIFFERENT_TOKEN", 2)), ALICE.party, BOB.party)

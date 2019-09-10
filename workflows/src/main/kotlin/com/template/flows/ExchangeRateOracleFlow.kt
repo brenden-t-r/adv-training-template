@@ -93,7 +93,7 @@ class SignHandler(val session: FlowSession) : FlowLogic<Unit>() {
 }
 
 @CordaService
-class ExchangeRateOracleService(val services: AppServiceHub) : SingletonSerializeAsToken() {
+class ExchangeRateOracleService(val services: ServiceHub) : SingletonSerializeAsToken() {
     private val myKey = services.myInfo.legalIdentities.first().owningKey
     fun query(currencyCode: String): Double {
         // Query external data source and return result
