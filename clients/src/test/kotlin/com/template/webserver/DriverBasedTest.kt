@@ -32,7 +32,7 @@ class DriverBasedTest {
     private val bankB = TestIdentity(CordaX500Name("BankB", "", "US"))
 
     @Test
-    fun `node test`() = withDriver {
+    fun `vault query`() = withDriver {
         // Start a pair of nodes and wait for them both to be ready.
         val (partyAHandle, partyBHandle) = startNodes(bankA, bankB)
 
@@ -61,6 +61,43 @@ class DriverBasedTest {
         }
 
         val result = Controller(partyAHandle.rpc).getIOUs()!!
+        assertEquals(1, result.size)
+        assertEquals(50, result.get(0).state.data.amount.quantity)
+    }
+
+    @Test
+    fun `vault query custom schema`() = withDriver {
+        // Start a pair of nodes and wait for them both to be ready.
+        val (partyAHandle, partyBHandle) = startNodes(bankA, bankB)
+
+        // From each node, make an RPC call to retrieve another node's name from the network map, to verify that the
+        // nodes have started and can communicate.
+
+        // This is a very basic test: in practice tests would be starting flows, and verifying the states in the vault
+        // and other important metrics to ensure that your CorDapp is working as intended.
+        assertEquals(bankB.name, partyAHandle.resolveName(bankB.name))
+        assertEquals(bankA.name, partyBHandle.resolveName(bankA.name))
+
+        val bobVaultUpdates: Observable<Vault.Update<IOUState>> = partyAHandle.rpc.vaultTrackBy<IOUState>().updates
+
+        partyBHandle.rpc.startFlow(::IOUIssueFlow,
+                IOUState(Amount(49, IOUToken("IOU_TOKEN", 2)),
+                partyAHandle.rpc.wellKnownPartyFromX500Name(bankA.name)!!, partyAHandle.rpc.wellKnownPartyFromX500Name(bankB.name)!!)
+        ).returnValue.getOrThrow()
+
+        partyBHandle.rpc.startFlow(::IOUIssueFlow,
+                IOUState(Amount(52, IOUToken("IOU_TOKEN", 2)),
+                        partyAHandle.rpc.wellKnownPartyFromX500Name(bankA.name)!!, partyAHandle.rpc.wellKnownPartyFromX500Name(bankB.name)!!)
+        ).returnValue.getOrThrow()
+
+//        bobVaultUpdates.expectEvents {
+//            expect { update ->
+//                println("Bob got vault update of $update")
+//                assertEquals(2, update.produced.size)
+//            }
+//        }
+
+        val result = Controller(partyAHandle.rpc).getIOUsWithAmountGreaterThan(50)!!
         assertEquals(1, result.size)
         assertEquals(52, result.get(0).state.data.amount.quantity)
     }
