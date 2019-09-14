@@ -38,10 +38,6 @@ class CordaSettlerNovateIOUFlow(
 
     @Suspendable
     override fun call(): WireTransaction {
-        // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
-//        return serviceHub.signInitialTransaction(
-////                TransactionBuilder(notary = null)
-////        )
         val oracle = serviceHub.networkMapCache.getPeerByLegalName(
                 CordaX500Name("ExchangeRateOracleService", "New York", "US")
         )!!
@@ -66,10 +62,6 @@ class CordaSettlerUpdateSettlementMethodFlow(
 
     @Suspendable
     override fun call(): WireTransaction {
-        // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
-//        return serviceHub.signInitialTransaction(
-//                TransactionBuilder(notary = null)
-//        )
         val oracle = serviceHub.networkMapCache.getPeerByLegalName(
                 CordaX500Name("SettlerOracleService", "New York", "US")
         )!!
@@ -93,7 +85,6 @@ class CordaSettlerBankApiSettlement(
 
 @CordaService
 class BankApiOracleService(val services: AppServiceHub) : SingletonSerializeAsToken() {
-    // API methods here
 
     private fun checkObligeeReceivedPayment(
             payment: BankApiPayment<TokenType>,
@@ -149,7 +140,6 @@ class MakeBankApiPayment<T : TokenType>(
 
     @Suspendable
     override fun makePayment(obligation: Obligation<*>, amount: Amount<T>): BankApiPayment<T> {
-        //return BankApiPayment("paymentReferenceHere", amount, PaymentStatus.FAILED)
         return BankApiPayment("paymentReferenceHere", amount, PaymentStatus.SENT)
     }
 }

@@ -30,8 +30,6 @@ import javax.annotation.Signed
 class IOUTokenIssueFlow(val tokenAmount: Int): FlowLogic<SignedTransaction>() {
     @Suspendable
     override fun call(): SignedTransaction {
-        val notary = serviceHub.networkMapCache.notaryIdentities.first()
-
         val issuedTokenType = IOUToken("CUSTOM_TOKEN", 0) issuedBy ourIdentity
         val fungibleTokens = tokenAmount of issuedTokenType heldBy ourIdentity
         return subFlow(IssueTokens(listOf(fungibleTokens)));
