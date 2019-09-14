@@ -6,6 +6,8 @@ import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.workflows.flows.issue.IssueTokensFlow
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens
+import com.r3.corda.lib.tokens.workflows.flows.move.addMoveFungibleTokens
+import com.r3.corda.lib.tokens.workflows.flows.move.addMoveNonFungibleTokens
 import com.template.flows.DeliveryVersusPaymentTokenFlow
 import com.template.flows.IOUTokenIssueFlow
 import com.template.states.*
@@ -21,7 +23,6 @@ import org.junit.Test
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
 import kotlin.test.assertEquals
 
-
 class TokenSdkExercises {
     private val network = MockNetwork(MockNetworkParameters(cordappsForAllNodes = listOf(
             TestCordapp.findCordapp("com.template.contracts"),
@@ -34,9 +35,7 @@ class TokenSdkExercises {
     private val c = network.createNode()
 
     init {
-        listOf(a, b, c).forEach {
-            //it.registerInitiatedFlow(TokenIOUIssueFlowResponder::class.java)
-        }
+        listOf(a, b, c).forEach {}
     }
 
     @Before
@@ -45,21 +44,44 @@ class TokenSdkExercises {
     @After
     fun tearDown() = network.stopNodes()
 
-    // TODO: Create fixed token
-    //@Test
+    /**
+     * TODO: Implement [ExampleFixedToken].
+     * Hint:
+     * - Fixed Tokens need to extend the [TokenType] class from Token SDK.
+     * - [TokenType] classes need to override two fields:
+     * -- [tokenIdentifier], String identifying the token, used in contracts to token states are of the same type.
+     * -- [fractionDigits], Int defining the number of decimal digits (ex. 2 => 10.00)
+     */
+    @Test
     fun testCreateFixedToken() {
-        //val token = ExampleFixedToken("test")
         assert(TokenType::class.java.isAssignableFrom(ExampleFixedToken::class.java))
     }
 
-    // TODO: Create evolvable token
-    //@Test
+    /**
+     * TODO: Implement [ExampleEvolvableToken].
+     * Hint:
+     * - Evolvable Tokens need to extend the [EvolvableTokenType] class from Token SDK.
+     * - [EvolvableTokenType] classes need to override three fields:
+     * -- [maintainers], List<Party> which specifies which parties will be notified when the token is updated.
+     * -- [fractionDigits], Int defining the number of decimal digits (ex. 2 => 10.00).
+     * -- [linearId] - remember that Evolvable Tokens have a linearId since they can evolve over time.
+     * - In addition to these fields, we can have any number of additional fields like any other [LinearState].
+     */
+    @Test
     fun testCreateEvolvableToken() {
         assert(EvolvableTokenType::class.java.isAssignableFrom(ExampleEvolvableToken::class.java))
     }
 
-    // TODO: Create non fungible fixed token
-    //@Test
+    /**
+     * TODO: Implement [createNonFungibleFixedToken] method.
+     * Hint:
+     * - Tokens can be Fixed versus Evolvable, but also Fungible versus Non-fungible.
+     * - For our method, we want to return a [NonFungibleToken] object containing an [ExampleFixedToken]
+     * - [NonFungibleToken] takes 3 parameters:
+     * -- an [IssuedTokenType] instance, a token holder [Party], and a linearId to identify this [NonFungibleToken].
+     * -- [IssuedTokenType] is a wrapper object that pairs a [TokenType] with a issuer [Party].
+     */
+    @Test
     fun testCreateNonFungibleFixedToken() {
         val issuer = b.info.legalIdentities.get(0);
         val holder = a.info.legalIdentities.get(0);
@@ -68,8 +90,20 @@ class TokenSdkExercises {
         assertEquals(ExampleFixedToken::class.java, result.tokenType.tokenClass)
     }
 
-    // TODO: Create non fungible evolvable token
-    //@Test
+    /**
+     * TODO: Implement [createNonFungibleEvolvableToken] method.
+     * Hint:
+     * - Now we want to create a [NonFungibleToken] containing an [ExampleEvolvableToken]
+     * - This will be the same as in the previous exercise, except that since EvolvableTokens use
+     * a [TokenPointer] to pair the evolvable token data [LinearState] with the actual [TokenType].
+     * - Our [IssuedTokenType] will wrap our [TokenPointer] with the issuer [Party].
+     * - The [TokenPointer] is a [TokenType] implementation that wraps a [LinearPointer] with a
+     * displayTokenSize which will be the [fractionDigits] from our [ExampleEvolvableToken].
+     * - The [LinearPointer] takes as parameter the linear Id of our [ExampleEvolvableToken]
+     * and the class definition for the token type.
+     * -- Hint: You can use the [ExampleEvolvableToken::class.java] notation.
+     */
+    @Test
     fun testCreateNonFungibleEvolvableToken() {
         val issuer = b.info.legalIdentities.get(0);
         val holder = a.info.legalIdentities.get(0);
@@ -78,8 +112,14 @@ class TokenSdkExercises {
         assertEquals(ExampleEvolvableToken::class.java, result.tokenType.tokenClass)
     }
 
-    // TODO: Create fungible fixed token
-    //@Test
+    /**
+     * TODO: Implement [createFungibleFixedToken] method.
+     * Hint:
+     * - Now we want to create a [FungibleToken] containing an [ExampleFixedToken]
+     * - When creating a [FungibleToken] we need to supply an [Amount] of the [IssuedTokenType]
+     * as well as the [Party] which is the owner of these tokens.
+     */
+    @Test
     fun testCreateFungibleFixedToken() {
         val issuer = b.info.legalIdentities.get(0);
         val holder = a.info.legalIdentities.get(0);
@@ -89,8 +129,13 @@ class TokenSdkExercises {
         assertEquals(1000, result.amount.quantity)
     }
 
-    // TODO: Create fungible evolvable token
-    //@Test
+    /**
+     * TODO: Implement [createFungibleEvolvableToken] method.
+     * Hint:
+     * - Now we want to create a [FungibleToken] containing an [ExampleEvolvableToken]
+     * - Use the [createFungibleFixedToken] and [createNonFungibleEvolvableToken] methods as a guide here.
+     */
+    @Test
     fun testCreateFungibleEvolvableToken() {
         val issuer = b.info.legalIdentities.get(0);
         val holder = a.info.legalIdentities.get(0);
@@ -101,12 +146,11 @@ class TokenSdkExercises {
     }
 
     /**
-     * Task 1
      * TODO: Convert IOUState to be in terms of an Amount of Token SDK Tokens rather than Currency
      * Hint:
      *  -
      */
-    //@Test
+    @Test
     fun hasIOUAmountFieldOfCorrectType() {
         // Does the amount field exist?
         val field = IOUState::class.java.getDeclaredField("amount")
@@ -120,10 +164,19 @@ class TokenSdkExercises {
     }
 
     /**
-     * Task 1
-     * TODO: Implement IOUTokenIssueFlow
+     * TODO: Implement [IOUTokenIssueFlow].
+     * Hint:
+     * - Now we know how to create and instantiate Fixed/Evolvable Fungible/Non-fungible Tokens,
+     * the next step is to actually ISSUE them on the ledger as immutable facts.
+     * - To do this we will implement the [IOUTokenIssueFlow] which will be a simple flow
+     * that will create and issue specified amount of FungibleTokens using our fixed IOUToken.
+     * - Once we have created the [FungibleToken] object, we subFlow the [IssueTokens] Flow from
+     * the Token SDK.
+     * - The [IssueTokens] Flow simply takes as argument a list containing the [FungibleToken]s to
+     * issue. In our case this will be a list containing our single [FungibleToken] instance.
+     * -- You can use the [listOf] Kotlin command to easily make a list.
      */
-    //@Test
+    @Test
     fun implementIOUTokenIssueFlow() {
         val future = b.startFlow(IOUTokenIssueFlow(25))
         network.runNetwork()
@@ -133,6 +186,22 @@ class TokenSdkExercises {
         assertEquals((stx.tx.outputStates.get(0) as FungibleToken).amount.quantity, 25)
     }
 
+    /**
+     * TODO: Implement [DeliveryVersusPaymentTokenFlow].
+     * Hint:
+     * - This flow will implement a simple delivery versus payment use case to exchange two different
+     * token types between two parties in an atomic transaction.
+     * - First, we'll need to create a [TransactionBuilder] with a [Notary] identity.
+     * - Then, we need to create a [FungibleToken] of some amount of the [ExampleFixedToken]
+     * in the [ourPayment] parameter.
+     * - Then, we need to add a Move command to our TransactionBuilder for both the payment and
+     * counter party asset.
+     * -- Here, the [addMoveFungibleTokens] and [addMoveNonFungibleTokens] helper methods from
+     * the Token SDK will come in handy.
+     * -- Control+Click the above helper methods to see the usage.
+     * - Finally, to get our unit test passing, use the [serviceHub] to sign the initial transaction
+     * and return the partially signed transaction.
+     */
     @Test
     fun implementDeliveryVersusPaymentFlow() {
         val partyA = a.info.legalIdentities.get(0);
