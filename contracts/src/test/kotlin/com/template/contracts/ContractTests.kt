@@ -12,6 +12,8 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.node.MockServices
 import net.corda.testing.node.ledger
+import net.corda.core.transactions.LedgerTransaction.InOutGroup
+import net.corda.core.transactions.LedgerTransaction
 import org.junit.Test
 
 class ContractTests {
@@ -23,9 +25,20 @@ class ContractTests {
     /**
      * TODO: Implement state grouping for the Merge command.
      * Hint:
-     * -
+     * - Use State Grouping in the [verify] function of the [IOUContract] to validate a Merge operation.
+     * - The [IOUState] has been updated to use a Token from the Token SDK instead of a Currency.
+     * We'll learn more about the Token SDK later in the course.
+     * - We just need to make sure the the [IOUState]'s [amount.token.tokenIdentifier] field matches for
+     * any tokens that are being merged.
+     * - First, we need to use the [groupStates] function of the [tx] object.
+     * -- Parametrize the groupStates function by the [IOUState] and [String] using the <IOUState, String> notation.
+     * This specifies that we are grouping [IOUState]s and the that grouping key is a [String]
+     * -- Within our groupStates {} clause, we need to specify the grouping key.
+     * In our case this will be the [amount.token.tokenIdentifier].
+     * -- The return type from the [groupStates] function is a list of [InOutGroup].
+     * - Next, we'll loop through the [InOutGroup]s and include that the total amount quantity
+     * of the [inputs] matches that of the [outputs] (i.e. two IOU's of 5 can be merged to 1 IOU of quantity 10).
      */
-
     @Test
     fun `state grouping test`() {
         val token1 = IOUState(Amount(50, IOUToken("IOU_TOKEN", 2)), ALICE.party, BOB.party)
