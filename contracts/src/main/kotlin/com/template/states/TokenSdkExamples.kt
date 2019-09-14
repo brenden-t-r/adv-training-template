@@ -1,75 +1,25 @@
 package com.template.states
 
-import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
-import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
-import com.r3.corda.lib.tokens.contracts.types.TokenPointer
-import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.LinearPointer
-import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.Party
 
 // TODO: Create Fixed Token type
-//class ExampleFixedToken(val data: String) {}
-data class ExampleFixedToken(
-        override val tokenIdentifier: String,
-        override val fractionDigits: Int = 0
-) : TokenType(tokenIdentifier, fractionDigits)
+// Remove the placeholder parameter.
+class ExampleFixedToken(vararg placeholder: Any) {}
 
 // TODO: Create Evolvable Token type
-//class ExampleEvolvableToken()
-data class ExampleEvolvableToken(
-        override val maintainers: List<Party>,
-        override val fractionDigits: Int,
-        val exampleDataProperty: String,
-        override val linearId: UniqueIdentifier = UniqueIdentifier()
-) : EvolvableTokenType()
+// Remove the placeholder parameter.
+class ExampleEvolvableToken(vararg placeholder: Any)
 
-//fun createNonFungibleFixedToken(issuer: Party): NonFungibleToken? {
-//    return null
-//}
-fun createNonFungibleFixedToken(issuer: Party, tokenHolder: Party): NonFungibleToken? {
-    val token = ExampleFixedToken("CUSTOMTOKEN", 0);
-    val issuedFixedToken =
-            IssuedTokenType(issuer, token);
-    val nonFungibleToken = NonFungibleToken(issuedFixedToken, tokenHolder, UniqueIdentifier());
-    return nonFungibleToken
-}
+// TODO: Create non fungible fixed token method
+fun createNonFungibleFixedToken(issuer: Party, tokenHolder: Party): NonFungibleToken? { return null }
 
-fun createNonFungibleEvolvableToken(issuer: Party, tokenHolder: Party): NonFungibleToken? {
-    val token = ExampleEvolvableToken(listOf(), 0, "test");
-    val linearPointer = LinearPointer(
-            token.linearId, ExampleEvolvableToken::class.java
-    );
-    val tokenPointer = TokenPointer(linearPointer, token.fractionDigits);
-    val issuedToken = IssuedTokenType(issuer, tokenPointer)
-    val nonFungibleToken = NonFungibleToken(issuedToken, tokenHolder, UniqueIdentifier());
-    return nonFungibleToken
-}
+// TODO: Create non fungible evolvable token method
+fun createNonFungibleEvolvableToken(issuer: Party, tokenHolder: Party): NonFungibleToken? { return null }
 
-//fun createFungibleFixedToken(issuer: Party, tokenHolder: Party, tokenQuantity: Long): FungibleToken? {
-//    return null
-//}
-fun createFungibleFixedToken(issuer: Party, tokenHolder: Party, tokenQuantity: Long): FungibleToken? {
-    val token = ExampleFixedToken("CUSTOMTOKEN", 0);
-    val issuedTokenType = IssuedTokenType(issuer, token);
-    val fungibleToken = FungibleToken(Amount(tokenQuantity, issuedTokenType), tokenHolder);
-    return fungibleToken
-}
+// TODO: Create fungible fixed token method
+fun createFungibleFixedToken(issuer: Party, tokenHolder: Party, tokenQuantity: Long): FungibleToken? { return null }
 
-//fun createFungibleEvolvableToken(issuer: Party, tokenHolder: Party, tokenQuantity: Long): FungibleToken? {
-//  return null
-//}
-
-fun createFungibleEvolvableToken(issuer: Party, tokenHolder: Party, tokenQuantity: Long): FungibleToken? {
-    val token = ExampleEvolvableToken(listOf(), 0, "test");
-    val linearPointer = LinearPointer(
-            token.linearId, ExampleEvolvableToken::class.java
-    );
-    val tokenPointer = TokenPointer(linearPointer, token.fractionDigits);
-    val issuedToken = IssuedTokenType(issuer, tokenPointer)
-    val fungibleToken = FungibleToken(Amount(tokenQuantity, issuedToken), tokenHolder);
-    return fungibleToken
-}
+// TODO: Create fungible evolvable token method
+fun createFungibleEvolvableToken(issuer: Party, tokenHolder: Party, tokenQuantity: Long): FungibleToken? { return null; }

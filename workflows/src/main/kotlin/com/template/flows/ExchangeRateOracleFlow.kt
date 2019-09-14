@@ -40,19 +40,12 @@ class ExchangeRateOracleFlow(val ptx: SignedTransaction) : FlowLogic<SignedTrans
 
     @Suspendable
     override fun call(): SignedTransaction {
-        // Get oracle identity
         val oracleName = CordaX500Name("ExchangeRateOracleService", "New York","US")
-        val oracle = serviceHub.networkMapCache.getNodeByLegalName(oracleName)?.legalIdentities?.first()
-                ?: throw IllegalArgumentException("Requested oracle $oracleName not found on network.")
 
-        // Create MerkleTree "Tear Off" for confidentiality
-        val filteredTx = createFilteredTransaction(oracle, ptx)
-
-        // Request Oracle signature
-        val oracleSignature = subFlow(SignExchangeRate(oracle, filteredTx))
-        val stx = ptx.withAdditionalSignature(oracleSignature)
-
-        return stx
+        // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
+        return serviceHub.signInitialTransaction(
+                TransactionBuilder(notary = null)
+        )
     }
 }
 
@@ -95,31 +88,7 @@ class SignHandler(val session: FlowSession) : FlowLogic<Unit>() {
 @CordaService
 class ExchangeRateOracleService(val services: ServiceHub) : SingletonSerializeAsToken() {
     private val myKey = services.myInfo.legalIdentities.first().owningKey
-    fun query(currencyCode: String): Double {
-        // Query external data source and return result
-        // In practice this would be an external call to a real service
-        if (currencyCode.equals("USD")) {
-            return 1.5;
-        } else if (currencyCode.equals("GBP")) {
-            return 1.8;
-        } else throw IllegalArgumentException("Unsupported currency.")
-    }
-    fun sign(ftx: FilteredTransaction): TransactionSignature {
-        ftx.verify() // Check the partial Merkle tree is valid.
-
-        fun isCommandCorrect(elem: Any) = when {
-            elem is Command<*> && elem.value is IOUContract.Commands.Exchange -> {
-                val cmdData = elem.value as IOUContract.Commands.Exchange
-                myKey in elem.signers && query(cmdData.currency) == cmdData.rate
-            }
-            else -> {
-                false
-            }
-        }
-
-        // Verify the correctness of the command data
-        if (ftx.checkWithFun(::isCommandCorrect)) {
-            return services.createSignature(ftx, myKey)
-        } else throw IllegalArgumentException("Invalid transaction.")
-    }
+    // Placeholder code to avoid type error when running the tests.
+    fun query(arg: Any): Any { return 0; }
+    fun sign(arg: Any): Any { return 0; }
 }

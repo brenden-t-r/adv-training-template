@@ -62,24 +62,7 @@ class IOUContract : Contract {
                                 output.participants.map { it.owningKey }.toSet()))
             }
             is Commands.Merge -> requireThat {
-                val inOutGroups = tx.groupStates<IOUState, String> { it.amount.token.tokenIdentifier }
 
-                for (inOutGroup in inOutGroups) {
-                    inOutGroup.groupingKey
-                    inOutGroup.inputs
-                    inOutGroup.outputs
-
-                    var inputTotal = 0L
-                    var outputTotal = 0L
-                    for (input in inOutGroup.inputs) {
-                        inputTotal += input.amount.quantity
-                    }
-                    for (output in inOutGroup.outputs) {
-                        outputTotal += output.amount.quantity
-                    }
-
-                    "Output total must equal input total for each token identifier" using (inputTotal == outputTotal)
-                }
             }
         }
     }

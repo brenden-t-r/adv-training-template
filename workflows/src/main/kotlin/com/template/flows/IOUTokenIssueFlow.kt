@@ -30,19 +30,10 @@ import javax.annotation.Signed
 class IOUTokenIssueFlow(val tokenAmount: Int): FlowLogic<SignedTransaction>() {
     @Suspendable
     override fun call(): SignedTransaction {
-        val notary = serviceHub.networkMapCache.notaryIdentities.first()
-
-        val issuedTokenType = IOUToken("CUSTOM_TOKEN", 0) issuedBy ourIdentity
-        val fungibleTokens = tokenAmount of issuedTokenType heldBy ourIdentity
-        return subFlow(IssueTokens(listOf(fungibleTokens)));
-
-//       ALTERNATIVE SYNTAX
-//       val issuedTokenType = IssuedTokenType(ourIdentity, state.amount.token);
-//       val fungibleToken =
-//                FungibleToken(
-//                        Amount(10000, issuedTokenType),
-//                        state.lender
-//       );
+        // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
+        return serviceHub.signInitialTransaction(
+                TransactionBuilder(notary = null)
+        )
     }
 }
 
@@ -53,14 +44,9 @@ class DeliveryVersusPaymentTokenFlow(
 ): FlowLogic<SignedTransaction>() {
     @Suspendable
     override fun call(): SignedTransaction {
-        val notary = serviceHub.networkMapCache.notaryIdentities.first()
-
-        val fungibleToken = 10 of ourPayment
-
-        var builder = TransactionBuilder(notary)
-        builder = addMoveFungibleTokens(builder, serviceHub, fungibleToken, counterParty, ourIdentity)
-        builder = addMoveNonFungibleTokens(builder, serviceHub, counterPartyAsset, ourIdentity)
-
-        return serviceHub.signInitialTransaction(builder)
+        // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
+        return serviceHub.signInitialTransaction(
+                TransactionBuilder(notary = null)
+        )
     }
 }

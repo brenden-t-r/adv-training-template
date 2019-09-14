@@ -38,24 +38,12 @@ class CordaSettlerNovateIOUFlow(
 
     @Suspendable
     override fun call(): WireTransaction {
+        val oracleName = CordaX500Name("ExchangeRateOracleService", "New York","US")
+
         // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
-//        return serviceHub.signInitialTransaction(
-////                TransactionBuilder(notary = null)
-////        )
-        val oracle = serviceHub.networkMapCache.getPeerByLegalName(
-                CordaX500Name("ExchangeRateOracleService", "New York", "US")
-        )!!
-
-        val exchangeRate = subFlow(QueryExchangeRate(oracle, "USD"))
-
-        return subFlow(NovateObligation.Initiator(
-                iou.linearId,
-                ObligationCommands.Novate.UpdateFaceAmountToken(
-                        IOUToken("CUSTOM_TOKEN", 0),
-                        FiatCurrency.getInstance("USD"),
-                        oracle,
-                        exchangeRate
-                )))
+        return serviceHub.signInitialTransaction(
+                TransactionBuilder(notary = null)
+        ).tx
     }
 }
 
@@ -67,17 +55,9 @@ class CordaSettlerUpdateSettlementMethodFlow(
     @Suspendable
     override fun call(): WireTransaction {
         // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
-//        return serviceHub.signInitialTransaction(
-//                TransactionBuilder(notary = null)
-//        )
-        val oracle = serviceHub.networkMapCache.getPeerByLegalName(
-                CordaX500Name("SettlerOracleService", "New York", "US")
-        )!!
-
-        return subFlow(UpdateSettlementMethod.Initiator(
-                novatedIou.linearId,
-                BankApiSettlement(accountToPay, oracle)
-        ))
+        return serviceHub.signInitialTransaction(
+                TransactionBuilder(notary = null)
+        ).tx
     }
 }
 
@@ -87,7 +67,10 @@ class CordaSettlerBankApiSettlement(
 
     @Suspendable
     override fun call(): WireTransaction {
-        return subFlow(OffLedgerSettleObligation.Initiator(novatedIou.faceAmount, novatedIou.linearId))
+        // Placeholder code to avoid type error when running the tests. Remove before starting the flow task!
+        return serviceHub.signInitialTransaction(
+                TransactionBuilder(notary = null)
+        ).tx
     }
 }
 
@@ -149,7 +132,6 @@ class MakeBankApiPayment<T : TokenType>(
 
     @Suspendable
     override fun makePayment(obligation: Obligation<*>, amount: Amount<T>): BankApiPayment<T> {
-        //return BankApiPayment("paymentReferenceHere", amount, PaymentStatus.FAILED)
-        return BankApiPayment("paymentReferenceHere", amount, PaymentStatus.SENT)
+        return BankApiPayment("paymentReferenceHere", amount, PaymentStatus.FAILED)
     }
 }

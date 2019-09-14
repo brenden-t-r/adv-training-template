@@ -31,18 +31,7 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
         private const val RETRY_TIME_TO_WAIT_FOR_SETTLEMENT = 5L
     }
 
-
     enum class VerifyResult { TIMEOUT, SUCCESS, PENDING, REJECTED }
-
-    @Suspendable
-    fun verifyBankApiSettlement(apiPayment: BankApiPayment<TokenType>): VerifyResult {
-        //return VerifyResult.REJECTED
-        return VerifyResult.SUCCESS
-        // return oracleService.hasPaymentSettled(apiPayment, obligation)
-        // TODO: Implement logic
-    }
-
-
 
     @Suspendable
     fun verifySwiftSettlement(swiftPayment: SwiftPayment<TokenType>): VerifyResult {
@@ -106,7 +95,6 @@ class VerifySettlement(private val otherSession: FlowSession) : FlowLogic<Unit>(
         // 4. Handle different settlement methods.
         val verifyResult = when (settlementMethod) {
             is SwiftSettlement -> verifySwiftSettlement(lastPayment as SwiftPayment)
-            is BankApiSettlement -> verifyBankApiSettlement(lastPayment as BankApiPayment)
             else -> throw IllegalStateException("Invalid settlement method $settlementMethod.")
         }
 
