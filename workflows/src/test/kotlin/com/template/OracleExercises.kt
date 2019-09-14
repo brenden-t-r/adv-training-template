@@ -9,6 +9,7 @@ import com.template.states.IOUToken
 import com.template.states.IOUTokenState
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.Command
+import net.corda.core.crypto.TransactionSignature
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.node.ServiceHub
 import net.corda.core.transactions.FilteredTransaction
@@ -47,34 +48,41 @@ class OracleExercises {
 
     @After
     fun tearDown() = network.stopNodes()
-//
-//    /**
-//     * Task 1
-//     * TODO: Implement a [query] method for the [ExchangeRateOracleService].
-//     * Hint:
-//     * - The query method must take a [String] currency code argument and return a [Double] representing
-//     *   the exchange rate received from the off-ledger data source.
-//     * - For this simple example you can just return a hard-coded value, but in practice you
-//     *   would likely query an external API or file attachment to get the current value.
-//     */
+
+    /**
+     * TODO: Implement a [query] method for the [ExchangeRateOracleService].
+     * Hint:
+     * - The query method must take a [String] currency code argument and return a [Double] representing
+     * the exchange rate received from the off-ledger data source.
+     * - For this simple example you can just return a hard-coded value, but in practice you
+     * would likely query an external API or file attachment to get the current value.
+     */
     @Test
     fun oracleServiceQuery() {
         val oracle = ExchangeRateOracleService(services = a.services)
         assert(ExchangeRateOracleService::class.java.kotlin.members.any { it.name == "query" })
         assertEquals(oracle.query("USD")::class.java, Double::class.java);
     }
-//
-//    /**
-//     * Task 2
-//     * TODO: Implement a [sign] method for the [ExchangeRateOracleService].
-//     * Hint:
-//     * - The sign method must take a [FilteredTransaction] argument and return the oracle's signature
-//     *   as a [TransactionSignature].
-//     * - The sign method must verify that the rate provided in the [Exchange] Command is valid.
-//     *
-//     * TODO: Hints
-//     *
-//     */
+
+    /**
+     * TODO: Implement a [sign] method for the [ExchangeRateOracleService].
+     * Hint:
+     * - The sign method must take a [FilteredTransaction] argument and return the oracle's signature
+     * as a [TransactionSignature].
+     * - The [FilteredTransaction] will be a Merkle Tree tear-off containing only the command and data
+     * needed for the Oracle to verify the exchange rate is correct.
+     * - The sign method must verify that the rate provided in the [Exchange] Command is valid.
+     * -- In order to do this, we need to see that the command provided in the [FilteredTransaction]
+     * is of type [IOUContract.Commands.Exchange] and that the [rate] field provided on the
+     * Exchange command is the correct rate given the [currency]. To do this we will need to again
+     * call to the [query] function.
+     * -- One simple way to perform this check would be to use the [checkWithFun] method of the
+     * [FilterTransaction], passing in a reference to a function that will check the [Exchange] command.
+     * -- An example use of [checkWithFun] would be ftx.checkWithFun(::isCommandCorrect) where
+     * isCommandCorrect refers to a function that takes the [Command] as argument.
+     * -- Hint: for the [Command], remember that the actual Command type and data is found within the [value]
+     * property.
+     */
     @Test
     fun oracleServiceSign() {
         val oracle = ExchangeRateOracleService(services = c.services)
@@ -82,7 +90,7 @@ class OracleExercises {
 
         val notary = a.services.networkMapCache.notaryIdentities.get(0)
         val builder = TransactionBuilder(notary = notary)
-        val rate = oracle.query("USD")
+        val rate = oracle.query("USD") as Double
         val output = IOUTokenState(
                 Amount(3, IOUToken("CUSTOM_TOKEN", 2)),
                 a.services.myInfo.legalIdentities.get(0),
@@ -102,19 +110,26 @@ class OracleExercises {
             }
         })
 
-        val oracleSig = oracle.sign(ftx)
+        val oracleSig = oracle.sign(ftx) as TransactionSignature
         assert(oracleSig.isValid(ftx.id))
     }
-//
-//
-//    // TODO: Implement the createFilteredTransaction() method as a separate exercise
-//
-//    /**
-//     * Task 3
-//     * TODO: Implement the [OracleExercises].
-//     * Hint:
-//     *  -
-//     */
+
+    /**
+     * TODO: Implement the [ExchangeRateOracleFlow].
+     * Hint:
+     * - In this flow, we will take a partially signed transaction as argument, and utilize
+     * our [ExchangeRateOracleService] to provide the exchange rate. This will be allow us to
+     * conveniently subFlow this [ExchangeRateOracleFlow] within other flows that require it.
+     * - First, we need to get the Oracle [Party] identity using the [serviceHub]'s networkMapCache.
+     * - Then, we need to create a [FilteredTransaction] in order to preserve confidentiality
+     * and only provide the Oracle with visibility to the exchange rate portion of the transaction.
+     * This is handy and still enables us to gather and verify the Oracle's signature.
+     * -- Utilize the [createFilteredTransaction] helper function.
+     * - Finally we need to require a signature from the Oracle.
+     * -- To do this, simply subFlow the [SignExchangeRate] flow.
+     * -- Once we have the returned signature, just add it to the transaction with the
+     * [withAdditionalSignature] method and return the [SignedTransaction].
+     */
     @Test
     fun oracleFlow() {
         val notary = a.services.networkMapCache.notaryIdentities.first()
