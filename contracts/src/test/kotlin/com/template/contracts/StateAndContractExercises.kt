@@ -1,26 +1,44 @@
 package com.template.contracts
 
-import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
-import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
-import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.template.states.IOUState
 import com.template.states.IOUToken
 import net.corda.core.contracts.Amount
-import net.corda.core.contracts.LinearPointer
+import net.corda.core.contracts.ContractState
 import net.corda.core.identity.CordaX500Name
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.schemas.QueryableState
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.node.MockServices
 import net.corda.testing.node.ledger
 import net.corda.core.transactions.LedgerTransaction.InOutGroup
-import net.corda.core.transactions.LedgerTransaction
 import org.junit.Test
 
-class ContractTests {
+class StateAndContractExercises {
     private val ledgerServices = MockServices()
 
     val ALICE = TestIdentity(CordaX500Name(organisation = "Alice", locality = "TestLand", country = "US"))
     val BOB = TestIdentity(CordaX500Name(organisation = "Bob", locality = "TestCity", country = "US"))
+
+    /**
+     * TODO: Turn the [IOUState] into a [QueryableState].
+     * Hint:
+     * - [QueryableState] implements [ContractState] and has two additional function requirements.
+     * - Update the IOU State to implement the [QueryableState].
+     * -- There will be compilation errors until we finish the remaining steps.
+     * - Create custom [MappedSchema] and [PersistentState] subclass implementations.
+     * -- We need to create a custom implementation of the [MappedSchema] class.
+     * -- Nest within our custom [MappedSchema] class, we will need a custom implementation of a [PersistentState].
+     * -- This uses JPA (Java Persistence API) notation to define how the state will be stored in the database.
+     * -- Use the @Entity annotation for our [PersistentState] to define it as a database table enumeration.
+     * -- Use the @Column annotation on each field within the [PersistentState] to define the table columns.
+     * - Implement the [supportedSchemas] and [generateMappedObject] methods from the [QueryableState] interface.
+     * -- [generateMappedObject] takes in a MappedSchema instance and returns the corresponding PersistentState.
+     * -- In this way, we could potentially have multiple Schema definitions.
+     * -- [supportedSchemas] simply returns a list of schemas supported by this QueryableState.
+     */
+    @Test
+    fun implementQueryableStateOnIOU() {
+        assert(QueryableState::class.java.isAssignableFrom(IOUState::class.java))
+    }
 
     /**
      * TODO: Implement state grouping for the Merge command.
