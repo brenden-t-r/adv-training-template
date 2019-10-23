@@ -4,6 +4,7 @@ import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
 import com.r3.corda.finance.obligation.contracts.flows.AbstractSendToSettlementOracle
 import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.finance.obligation.contracts.types.PaymentStatus
+import com.r3.corda.finance.obligation.contracts.types.SettlementMethod
 import com.r3.corda.finance.obligation.oracle.flows.VerifySettlement
 import com.r3.corda.finance.obligation.workflows.flows.NovateObligation
 import com.r3.corda.finance.obligation.workflows.flows.OffLedgerSettleObligation
@@ -64,26 +65,32 @@ class SettlerExercises {
     @After
     fun tearDown() = network.stopNodes()
 
-
-
     /**
-     * Task 1
      * TODO: Update IOUState to subclass the Obligation state from the Settler CorDapp in order
      * to allow integration of Settler with our IOU applicaton.
      * Hint:
      *  -
      */
-    //@Test
-    fun isLinearState() {
+    @Test
+    fun testIOUStateExtendsSettlerObligation() {
         assert(Obligation::class.java.isAssignableFrom(IOUState::class.java))
     }
 
     /**
-     * Task 2
-     * TODO: Implement the CordaSettlerNovateIOUFlow
-     * Steps:
-     * 1) Get exchange rate from our ExchangeRateOracle
-     * 2) Novate obligation with relevant currency
+     * TODO: Implement the [CordaSettlerNovateIOUFlow] to novate the IOU in terms of the settlement currency.
+     * Hint:
+     * - We're going to leverage the [NovateObligation.Intiator] subflow from the Settler CorDapp.
+     * - First, get the oracle identity from the network map cache using the [getPeerByLegalName] method.
+     * - Next, we'll get the exchange rate by querying our Exchange Rate Oracle.
+     * -- Subflow the [QueryExchangeRate] which returns an exchange rate [Double].
+     * - Finally, subflow the [NovateObligation.Initiator] flow.
+     * -- This flow takes the linearId of the obligation to novate and an [ObligationCommands.Novate] command.
+     * -- In this case we'll use the [ObligationCommands.Novate.UpdateFaceAmountToken]
+     * -- The UpdateFaceAmountToken command takes 4 parameters:
+     * --- The original token (Our [IOUToken])
+     * --- The new token to novate with (We can use [FiatCurrency.getInstance] utility method),
+     * --- Our oracle [Party],
+     * --- The exchange rate [Double] we got from the Oracle.
      */
     @Test
     fun testCordaSettlerNovateIOUFlow() {
@@ -102,17 +109,21 @@ class SettlerExercises {
         network.runNetwork()
         val resultFromNovate = novateFuture.getOrThrow().toLedgerTransaction(a.services).outputStates.get(0) as Obligation<TokenType>
 
-        //assertEquals(resultFromNovate.toLedgerTransaction(a.services).outputStates.size, 1)
         assertEquals(resultFromNovate.faceAmount, Amount(7500, TokenType("USD", 2)));
     }
 
     /**
-     * Task 3
-     * TODO: Implement the CordaSettlerUpdateSettlementMethodFlow
-     * Steps:
-
+     * TODO: Implement the [CordaSettlerUpdateSettlementMethodFlow] to set the settlement method to our payment rail.
+     * Hint:
+     * - We're going to leverage the [UpdateSettlementMethod.Intiator] subflow from the Settler CorDapp.
+     * - First, get the oracle identity from the network map cache using the [getPeerByLegalName] method.
+     * - Next, we subflow the [UpdateSettlementMethod.Intiator] flow.
+     * -- This subflow takes 2 parameters:
+     * --- The linear ID of our obligation to update the settlment method of.
+     * --- An implementation of the [SettlementMethod] interface from the Settler CorDapp.
+     * ---- In our case we'll use our [BankApiSettlement] implementation.
      */
-    //@Test
+    @Test
     fun testCordaSettlerUpdateSettlementMethodFlow() {
         // 1. Create obligation
         val iou = IOUState(
@@ -137,11 +148,21 @@ class SettlerExercises {
     }
 
     /**
-     * Task 4
-     * TODO: Update VerifySettlement flow
-     * Steps:
+     * TODO: Update [VerifySettlement] flow from Settler CorDapp to include our Bank API payment rail.
+     * Hint:
+     * - We need to update the VerifySettlement flow to handle the case of receiving our custom payment
+     * - rail as a SettlementMethod.
+     * - In order to do this, check in the [call] function at the code labeled as step 4 in the comments.
+     * -- There you'll find a when/is clause which you'll need to add a case for our [BankApiSettlement]
+     * - Then we can implement a custom function to specify the conditions for a BankApiSettlement to be verified.
+     * -- We'll use the methods from the [BankApiOracleService].
+     * -- Check the [VerifySettlement.verifySwiftSettlement] method for inspiration.
+     * -- For our case, if the [BankApiOracleService.checkObligeeReceivedPayment] and
+     * [BankApiOracleService.hasPaymentSettled] return true, then we can consider the payment as confirmed.
+     * --- Hint: You may need to modify these methods to ensure that they return the correct result.
+     *
      */
-    //@Test
+    @Test
     fun testUpdateVerifySettlementForBankApiSettlement() {
         // 1. Create obligation
         val iou = IOUState(
@@ -175,9 +196,16 @@ class SettlerExercises {
     }
 
     /**
-     * Task 5
-     * TODO: Implement the CordaSettlerBankApiSettlement Flow
-     * Steps:
+     * TODO: Implement the [CordaSettlerBankApiSettlement] Flow which will make the off-ledger payment and settle the IOU.
+     * Hint:
+     * - This flow will use our custom [MakeBankApiPayment] implementation of the
+     * [MakeOffLedgerPayment] flow from Settler CorDapp.
+     * - All our [CordaSettlerBankApiSettlement] flow needs to do is subflow the [OffLedgerSettleObligation.Initiator]
+     * flow from the Settler CorDapp with our novated IOU.
+     * -- This flow take as parameter two property:
+     * --- The [Amount] of our IOU in the novated currency.
+     * --- The [UniqueIdentifier] linear ID of our IOU to settle.
+     * -- The Settler CorDapp and our Settlement Oracle will do the rest!
      */
     @Test
     fun testCordaSettlerBankApiSettlement() {

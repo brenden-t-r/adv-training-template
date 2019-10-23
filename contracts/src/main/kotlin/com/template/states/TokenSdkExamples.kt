@@ -11,15 +11,11 @@ import net.corda.core.contracts.LinearPointer
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.Party
 
-// TODO: Create Fixed Token type
-//class ExampleFixedToken(val data: String) {}
 data class ExampleFixedToken(
         override val tokenIdentifier: String,
         override val fractionDigits: Int = 0
 ) : TokenType(tokenIdentifier, fractionDigits)
 
-// TODO: Create Evolvable Token type
-//class ExampleEvolvableToken()
 data class ExampleEvolvableToken(
         override val maintainers: List<Party>,
         override val fractionDigits: Int,
@@ -27,9 +23,6 @@ data class ExampleEvolvableToken(
         override val linearId: UniqueIdentifier = UniqueIdentifier()
 ) : EvolvableTokenType()
 
-//fun createNonFungibleFixedToken(issuer: Party): NonFungibleToken? {
-//    return null
-//}
 fun createNonFungibleFixedToken(issuer: Party, tokenHolder: Party): NonFungibleToken? {
     val token = ExampleFixedToken("CUSTOMTOKEN", 0);
     val issuedFixedToken =
@@ -49,19 +42,12 @@ fun createNonFungibleEvolvableToken(issuer: Party, tokenHolder: Party): NonFungi
     return nonFungibleToken
 }
 
-//fun createFungibleFixedToken(issuer: Party, tokenHolder: Party, tokenQuantity: Long): FungibleToken? {
-//    return null
-//}
 fun createFungibleFixedToken(issuer: Party, tokenHolder: Party, tokenQuantity: Long): FungibleToken? {
     val token = ExampleFixedToken("CUSTOMTOKEN", 0);
     val issuedTokenType = IssuedTokenType(issuer, token);
     val fungibleToken = FungibleToken(Amount(tokenQuantity, issuedTokenType), tokenHolder);
     return fungibleToken
 }
-
-//fun createFungibleEvolvableToken(issuer: Party, tokenHolder: Party, tokenQuantity: Long): FungibleToken? {
-//  return null
-//}
 
 fun createFungibleEvolvableToken(issuer: Party, tokenHolder: Party, tokenQuantity: Long): FungibleToken? {
     val token = ExampleEvolvableToken(listOf(), 0, "test");
