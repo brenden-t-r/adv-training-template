@@ -77,8 +77,7 @@ class StateAndContractExercises {
                 input(IOUContract.IOU_CONTRACT_ID, token4)
                 output(IOUContract.IOU_CONTRACT_ID, output2)
                 command(listOf(ALICE.publicKey, BOB.publicKey), IOUContract.Commands.Merge())
-                this.fails() // Not the same token identifier
-
+                this `fails with` "Output total must equal input total for each token identifier" // Not the same token identifier
             }
             transaction {
                 input(IOUContract.IOU_CONTRACT_ID, token1)
