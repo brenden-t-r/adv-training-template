@@ -1,9 +1,5 @@
 package com.template.webserver
 
-//import com.template.flows.IOUIssueFlow
-//import com.template.states.IOUCustomSchema
-//import com.template.states.IOUState
-//import com.template.states.IOUToken
 import com.template.states.IOUCustomSchema
 import com.template.states.IOUState
 import net.corda.core.contracts.Amount
@@ -38,13 +34,11 @@ class Controller(proxy: CordaRPCOps) {
 
     @GetMapping(value = "/getIOUs")
     public fun getIOUs(): List<StateAndRef<IOUState>>? {
-        //return null;
         return proxy.vaultQuery(IOUState::class.java).states
     }
 
     @GetMapping(value = "/getIOUs/linearId/{linearId}")
     public fun getIousWithLinearId(@PathVariable linearId: String): List<StateAndRef<IOUState>>? {
-        //return null;
         val linearId = UniqueIdentifier.fromString(linearId)
         val criteria = QueryCriteria.LinearStateQueryCriteria(
                 null, listOf(linearId));
@@ -53,7 +47,6 @@ class Controller(proxy: CordaRPCOps) {
 
     @GetMapping(value = "/getIOUs/greaterThan/{amount}")
     public fun getIOUsWithAmountGreaterThan(@PathVariable amount: Long): List<StateAndRef<IOUState>>? {
-        //return null;
         return builder {
             val criteria = QueryCriteria.VaultCustomQueryCriteria(
                     IOUCustomSchema.PersistentIOU::amount.greaterThan(amount)
