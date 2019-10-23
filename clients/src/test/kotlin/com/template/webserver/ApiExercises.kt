@@ -22,6 +22,13 @@ class ApiExercises {
     private val bankA = TestIdentity(CordaX500Name("BankA", "", "GB"))
     private val bankB = TestIdentity(CordaX500Name("BankB", "", "US"))
 
+    /**
+     * TODO: Implement the [getIOUs] method of the RPC API [Controller]
+     * Hint:
+     * - Use the [vaultQuery] RPC method and parameterize by IOUState
+     * - You can specify a query criteria or simply pass in a Class reference into the vaultQuery method
+     * -- Indicate a class reference in kotlin using the [::class.java] syntax
+     */
     @Test
     fun `vault query`() = withDriver {
         // Start a pair of nodes and wait for them both to be ready.
@@ -37,6 +44,20 @@ class ApiExercises {
         assertEquals(50, result.get(0).state.data.amount.quantity)
     }
 
+    /**
+     * TODO: Implement the [getIousWithLinearId] method of the RPC API [Controller]
+     * Hint:
+     * - Use the [vaultQueryBy] RPC method using a LinearStateQueryCriteria
+     * - First, we need to convert the String linear ID into a UniqueIdentifier.
+     * -- Use the [fromString] static method from the [UniqueIdentifier] class
+     * - Create a [QueryCriteria.LinearStateQueryCriteria] instance that will filter by our linear ID.
+     * -- The LinearStateQueryCrtieria takes a list of UUID linear IDs as the second parameter
+     * --- Use the [listOf] to create a list on the fly
+     * --- You can leave all other constructor parameters null since we don't care to override the default
+     * for those fields.
+     * - Parameterize the [vaultQueryBy] method by IOUState,
+     *      ex) vaultQueryBy<MyState>
+     */
     @Test
     fun `vault query linear id`() = withDriver {
         // Start a pair of nodes and wait for them both to be ready.
@@ -54,6 +75,26 @@ class ApiExercises {
         assertEquals(50, result.get(0).state.data.amount.quantity)
     }
 
+    /**
+     * TODO: Implement the [getIOUsWithAmountGreaterThan] method of the RPC API [Controller]
+     * Hint:
+     * - Use [vaultQueryBy] with a [VaultCustomQueryCriteria] within a [builder] DSL lambda block
+     * - Create a lambda scope by using the [builder] function from [QueryCriteriaUtils]
+     *    ex)
+     *    builder {
+     *      // create criteria using DSL helper functions (greatherThan, lessThan, sum, etc..)
+     *      proxy.vaultQueryBy<IOUState>(myCriteria)
+     *    }
+     * - Within the builder block, create a [VaultCustomQueryCrtieria]
+     * -- Pass in filter function as argument to VaultCustomQueryCritiera
+     *    ex)
+     *    VaultCustomQueryCriteria(
+     *       PersistentCashState::pennies
+     *      .greaterThanOrEqual(10L)
+     *    )
+     * - Call [vaultQueryBy] within the [builder] block passing in our custom criteria object
+     *   ex) vaultQueryBy<IOUState>(criteria)queryBy<IOUState>(criteria)
+     */
     @Test
     fun `vault query custom schema`() = withDriver {
         // Start a pair of nodes and wait for them both to be ready.
