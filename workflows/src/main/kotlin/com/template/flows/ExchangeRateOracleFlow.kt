@@ -29,13 +29,8 @@ import java.util.function.Predicate
 class ExchangeRateOracleFlow(val ptx: SignedTransaction) : FlowLogic<SignedTransaction>() {
     override val progressTracker = ProgressTracker()
 
-    fun createFilteredTransaction(oracle: Party, stx: SignedTransaction): FilteredTransaction {
-        return stx.buildFilteredTransaction(Predicate {
-            when (it) {
-                is Command<*> -> oracle.owningKey in it.signers //&& it.value is FxRateContract.Create
-                else -> false
-            }
-        })
+    fun createFilteredTransaction(oracle: Party, stx: SignedTransaction): FilteredTransaction? {
+        return null
     }
 
     @Suspendable
