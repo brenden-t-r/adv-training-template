@@ -32,7 +32,7 @@ class ExchangeRateOracleFlow(val ptx: SignedTransaction) : FlowLogic<SignedTrans
     fun createFilteredTransaction(oracle: Party, stx: SignedTransaction): FilteredTransaction {
         return stx.buildFilteredTransaction(Predicate {
             when (it) {
-                is Command<*> -> oracle.owningKey in it.signers //&& it.value is FxRateContract.Create
+                is Command<*> -> oracle.owningKey in it.signers
                 else -> false
             }
         })
