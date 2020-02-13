@@ -1,9 +1,5 @@
 package com.template.webserver
 
-//import com.template.flows.IOUIssueFlow
-//import com.template.states.IOUCustomSchema
-//import com.template.states.IOUState
-//import com.template.states.IOUToken
 import com.template.states.IOUState
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.StateAndRef
