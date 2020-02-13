@@ -1,6 +1,5 @@
 package com.template.contracts
 
-import com.r3.corda.finance.obligation.contracts.commands.ObligationCommands
 import com.template.states.IOUState
 import jdk.nashorn.internal.parser.TokenType
 import net.corda.core.contracts.*
@@ -27,11 +26,14 @@ class IOUContract : Contract {
      * It is useful to encapsulate your commands inside an interface, so you can use the [requireSingleCommand]
      * function to check for a number of commands which implement this interface.
      */
-    interface Commands : ObligationCommands {
-        class Issue : TypeOnlyCommandData(), Commands, ObligationCommands
-        class Transfer : TypeOnlyCommandData(), Commands, ObligationCommands
-        class Merge: TypeOnlyCommandData(), Commands, ObligationCommands
-        class Exchange(val currency: String, val rate: Double) : Commands, ObligationCommands
+    interface Commands : CommandData {
+        class Issue : TypeOnlyCommandData(), Commands
+        class Transfer : TypeOnlyCommandData(), Commands
+        class Merge: TypeOnlyCommandData(), Commands
+        class Exchange(val currency: String, val rate: Double) : Commands
+        class Novate(val currency: String, val rate: Double) : Commands
+        class Settle(val transactionId: String, val novatedAmount: Double,
+                     val novatedCurrency: String, val settlementAccount: String ): Commands
     }
 
     /**
@@ -39,7 +41,7 @@ class IOUContract : Contract {
      * The constraints are self documenting so don't require any additional explanation.
      */
     override fun verify(tx: LedgerTransaction) {
-        val command = tx.commandsOfType<ObligationCommands>().first()
+        val command = tx.commandsOfType<Commands>().first()
         when (command.value) {
             is Commands.Issue -> requireThat {
                 "No inputs should be consumed when issuing an IOU." using (tx.inputs.isEmpty())

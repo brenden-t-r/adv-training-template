@@ -1,7 +1,5 @@
 package com.template.states
 
-import com.r3.corda.finance.obligation.contracts.ObligationContract
-import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.template.contracts.IOUContract
@@ -32,9 +30,9 @@ import javax.persistence.Entity
 data class IOUState(val amount: Amount<TokenType>,
                     val lender: Party,
                     val borrower: Party,
-                    val paid: Amount<TokenType> = Amount(0, amount.token),
-                    override val linearId: UniqueIdentifier = UniqueIdentifier()
-): Obligation<TokenType>(amount, borrower, lender) {
+                    override val linearId: UniqueIdentifier = UniqueIdentifier(),
+                    val settled: Boolean = false
+): LinearState {
     /**
      *  This property holds a list of the nodes which can "use" this state in a valid transaction. In this case, the
      *  lender or the borrower.
@@ -46,7 +44,8 @@ data class IOUState(val amount: Amount<TokenType>,
      * - [pay] adds an amount to the paid property. It does no validation.
      * - [withNewLender] creates a copy of the current state with a newly specified lender. For use when transferring.
      */
-    fun pay(amountToPay: Amount<TokenType>) = copy(paid = paid.plus(amountToPay))
     fun withNewLender(newLender: Party) = copy(lender = newLender)
+    fun withNewAmount(newAmount: Amount<TokenType>) = copy(amount = newAmount)
+    fun withSettled() = copy(settled = true)
 
 }
