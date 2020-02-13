@@ -219,8 +219,6 @@ class TokenSdkExercises {
         val stx2 = nonFungibleFuture.getOrThrow()
         assertEquals(1, stx2.tx.outputStates.size)
 
-        val states = a.services.vaultService.queryBy(ContractState::class.java).states
-
         val dvpFuture = a.startFlow(DeliveryVersusPaymentTokenFlow(
                 ExampleFixedToken("CUSTOMTOKEN", 2),
                 ExampleFixedToken("CUSTOMTOKEN", 2),

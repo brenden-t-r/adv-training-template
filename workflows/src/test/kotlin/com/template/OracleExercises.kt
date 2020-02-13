@@ -90,7 +90,7 @@ class OracleExercises {
 
         val notary = a.services.networkMapCache.notaryIdentities.get(0)
         val builder = TransactionBuilder(notary = notary)
-        val rate = oracle.query("USD") as Double
+        val rate = oracle.query("USD")
         val output = IOUTokenState(
                 Amount(3, IOUToken("CUSTOM_TOKEN", 2)),
                 a.services.myInfo.legalIdentities.get(0),
@@ -110,7 +110,7 @@ class OracleExercises {
             }
         })
 
-        val oracleSig = oracle.sign(ftx) as TransactionSignature
+        val oracleSig = oracle.sign(ftx)
         assert(oracleSig.isValid(ftx.id))
     }
 

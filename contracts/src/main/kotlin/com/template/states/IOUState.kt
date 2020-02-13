@@ -1,9 +1,6 @@
 package com.template.states
 
-import com.r3.corda.finance.obligation.contracts.ObligationContract
-import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.template.contracts.IOUContract
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.BelongsToContract
@@ -32,9 +29,9 @@ import javax.persistence.Entity
 data class IOUState(val amount: Amount<TokenType>,
                     val lender: Party,
                     val borrower: Party,
-                    val paid: Amount<TokenType> = Amount(0, amount.token),
-                    override val linearId: UniqueIdentifier = UniqueIdentifier()
-): QueryableState, Obligation<TokenType>(amount, borrower, lender) { // , QueryableState
+                    override val linearId: UniqueIdentifier = UniqueIdentifier(),
+                    val settled: Boolean = false
+): QueryableState, LinearState {
     /**
      *  This property holds a list of the nodes which can "use" this state in a valid transaction. In this case, the
      *  lender or the borrower.
@@ -46,12 +43,14 @@ data class IOUState(val amount: Amount<TokenType>,
      * - [pay] adds an amount to the paid property. It does no validation.
      * - [withNewLender] creates a copy of the current state with a newly specified lender. For use when transferring.
      */
-    fun pay(amountToPay: Amount<TokenType>) = copy(paid = paid.plus(amountToPay))
     fun withNewLender(newLender: Party) = copy(lender = newLender)
+    fun withNewAmount(newAmount: Amount<TokenType>) = copy(amount = newAmount)
+    fun withSettled() = copy(settled = true)
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState {
         return if (schema is IOUCustomSchema) {
-            IOUCustomSchema.PersistentIOU(linearId.id, lender.name.toString(), borrower.name.toString(), amount.quantity)
+            IOUCustomSchema.PersistentIOU(linearId.id, lender.name.toString(),
+                    borrower.name.toString(), amount.quantity, settled)
         } else {
             throw IllegalArgumentException("Unrecognised schema \$schema")
         }
@@ -69,6 +68,7 @@ class IOUCustomSchema : MappedSchema(IOUCustomSchema::class.java, 1, listOf(Pers
             @Column(nullable = false) val linearId: UUID,
             @Column(nullable = false) val lender: String,
             @Column(nullable = false) val borrower: String,
-            @Column(nullable = false) val amount: Long
+            @Column(nullable = false) val amount: Long,
+            @Column(nullable = false) val settled: Boolean
     ) : PersistentState() {}
 }

@@ -112,6 +112,10 @@ class ExchangeRateOracleService(val services: ServiceHub) : SingletonSerializeAs
                 val cmdData = elem.value as IOUContract.Commands.Exchange
                 myKey in elem.signers && query(cmdData.currency) == cmdData.rate
             }
+            elem is Command<*> && elem.value is IOUContract.Commands.Novate -> {
+                val cmdData = elem.value as IOUContract.Commands.Novate
+                myKey in elem.signers && query(cmdData.currency) == cmdData.rate
+            }
             else -> {
                 false
             }

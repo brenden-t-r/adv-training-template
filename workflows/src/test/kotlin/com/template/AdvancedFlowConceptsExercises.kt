@@ -76,8 +76,7 @@ class AdvancedFlowConceptsExercises {
         val flow = ExchangeRateOracleFlow(ptx)
         val ftx = flow.createFilteredTransaction(c.info.legalIdentities[0], ptx)
 
-        assert(ftx != null)
-        assertEquals(1, ftx!!.commands.size)
+        assertEquals(1, ftx.commands.size)
         assertEquals(1.25, (ftx.commands[0].value as IOUContract.Commands.Exchange).rate)
     }
 }
