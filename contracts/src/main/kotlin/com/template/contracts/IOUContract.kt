@@ -31,6 +31,9 @@ class IOUContract : Contract {
         class Transfer : TypeOnlyCommandData(), Commands
         class Merge: TypeOnlyCommandData(), Commands
         class Exchange(val currency: String, val rate: Double) : Commands
+        class Novate(val currency: String, val rate: Double) : Commands
+        class Settle(val transactionId: String, val novatedAmount: Double,
+                     val novatedCurrency: String, val settlementAccount: String ): Commands
     }
 
     /**
