@@ -1,7 +1,5 @@
 package com.template.states
 
-import com.r3.corda.finance.obligation.contracts.ObligationContract
-import com.r3.corda.finance.obligation.contracts.states.Obligation
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.template.contracts.IOUContract
@@ -34,7 +32,7 @@ data class IOUState(val amount: Amount<TokenType>,
                     val borrower: Party,
                     val paid: Amount<TokenType> = Amount(0, amount.token),
                     override val linearId: UniqueIdentifier = UniqueIdentifier()
-): QueryableState, Obligation<TokenType>(amount, borrower, lender) { // , QueryableState
+): QueryableState, LinearState {
     /**
      *  This property holds a list of the nodes which can "use" this state in a valid transaction. In this case, the
      *  lender or the borrower.
