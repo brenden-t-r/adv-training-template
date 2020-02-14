@@ -54,7 +54,7 @@ class StateAndContractExercises {
      * -- Within our groupStates {} clause, we need to specify the grouping key.
      * In our case this will be the [amount.token.tokenIdentifier].
      * -- The return type from the [groupStates] function is a list of [InOutGroup].
-     * - Next, we'll loop through the [InOutGroup]s and include that the total amount quantity
+     * - Next, we'll loop through the [InOutGroup]s and verify that the total amount quantity
      * of the [inputs] matches that of the [outputs] (i.e. two IOU's of 5 can be merged to 1 IOU of quantity 10).
      */
     @Test
